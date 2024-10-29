@@ -49,7 +49,7 @@ LOCALE_PATHS = [str(BASE_DIR / "locale")]
 DATABASES = {
     "default": env.db(
         "DATABASE_URL",
-        default="postgres://localhost/mopito_project",
+        default="postgres://postgres:ptahhotep2@localhost:5432/mopito_project",
     ),
 }
 DATABASES["default"]["ATOMIC_REQUESTS"] = True
