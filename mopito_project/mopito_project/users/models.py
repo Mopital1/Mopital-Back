@@ -1,12 +1,20 @@
+from datetime import datetime, timedelta
+from django.conf import settings
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin
 from django.contrib.auth.models import UserManager as BaseUserManager
 from django.core.mail import send_mail
+import random
+import pytz
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+from model_utils.models import TimeStampedModel
 
-from mopito_project.core.models import BaseModelUser
+from mopito_project.core.models import BaseModel, BaseModelUser
+from mopito_project.actors.models import Patients
+# Staffs
+
 
 
 class UserManager(BaseUserManager):
@@ -53,6 +61,7 @@ class AbstractUser(AbstractBaseUser, PermissionsMixin):
         unique=True,
         error_messages={"unique": _("A user with that email address already exists.")},
     )
+    
     is_staff = models.BooleanField(
         _("staff status"),
         default=False,
@@ -67,6 +76,7 @@ class AbstractUser(AbstractBaseUser, PermissionsMixin):
         ),
     )
     date_joined = models.DateTimeField(_("date joined"), default=timezone.now)
+
 
     objects = UserManager()
 
@@ -112,16 +122,23 @@ class User(AbstractUser, BaseModelUser):
     )
 
     user_typ = models.CharField(_("user_typ"), max_length=20, choices=UserTyp, default="ADMIN")
+    profile = models.OneToOneField(
+        "Profile",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="user",
+    )
 
     # est rattaché ou pas à une clinique
 
-    # patient = models.OneToOneField(
-    #     Patients,
-    #     on_delete=models.CASCADE,
-    #     null=True,
-    #     blank=True,
-    #     related_name="user",
-    # )
+    patient = models.OneToOneField(
+        Patients,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="user",
+    )
 
     # staff = models.OneToOneField(
     #     Staffs,
@@ -133,6 +150,76 @@ class User(AbstractUser, BaseModelUser):
 
     class Meta(AbstractUser.Meta):
         swappable = "AUTH_USER_MODEL"
+
+
+# classe pour le profile de l'utilisateur
+class Profile(BaseModel):
+    """
+    class for user profile
+    """
+    Sex = (("M", "MALE"), ("F", "FEMALE"))
+    
+    phone_number = models.CharField(
+        _("phone_number"), 
+        max_length=20, 
+        unique=True,
+        null=True,
+        blank=True,
+        error_messages={"unique": _("A user with that phone number already exists.")},
+        )
+    username = models.CharField(
+        _("username"),
+        max_length=150,
+        unique=True,
+        error_messages={"unique": _("A user with that username already exists.")},
+    )
+    first_name = models.CharField(_("first_name"), max_length=50, null=True, blank=True)
+    last_name = models.CharField(_("first_name"), max_length=50, null=True, blank=True)
+    gender = models.CharField(_("gender"), max_length=10, choices=Sex, default="M")
+    code = models.CharField(_("code"), max_length=50, null=True, blank=True)
+    dob = models.DateTimeField(_("dob"), default=None, blank=True, null=True)
+    profile_picture_file = models.FileField(
+        _("profile_picture_file"), null=True, blank=True, upload_to="profile_picture/%Y/%m/%D/"
+    )
+
+class OTP(TimeStampedModel):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        verbose_name=_("user"),
+        related_name="otps"
+    )
+    used = models.BooleanField(_("used"), default=False)
+    otp = models.CharField(max_length=6)
+    used = models.BooleanField(default=False)
+
+
+    def save(self, *args, **kwargs):
+        if not self.otp:
+            self.otp = str(random.randint(10000, 99999))
+        # super().save(*args, **kwargs)
+        self.created = datetime.now()
+        super(TimeStampedModel, self).save(*args, **kwargs)
+
+
+    def is_valid(self, obj):
+        # Add logic to check if OTP is still valid (e.g., not expired)
+        # return True
+        otp = obj
+        if otp.used:
+            return False
+        expired_at = otp.created + timedelta(minutes=settings.VALID_TOKEN_TIME)
+        now = pytz.utc.localize(datetime.now())
+
+        if now < expired_at:
+            return True
+
+        otp.used = True
+        otp.save()
+
+        return False
+   
+
 
 # class User(AbstractUser):
 #     """

@@ -93,6 +93,7 @@ THIRD_PARTY_APPS = [
 LOCAL_APPS = [
     "mopito_project.users",
     "mopito_project.core",
+    "mopito_project.actors",
     # Your stuff: custom apps go here
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
@@ -232,6 +233,9 @@ EMAIL_BACKEND = env(
 )
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-timeout
 EMAIL_TIMEOUT = 5
+
+# Token Times IN Minutes
+VALID_TOKEN_TIME = 30
 
 # ADMIN
 # ------------------------------------------------------------------------------

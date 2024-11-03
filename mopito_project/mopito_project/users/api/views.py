@@ -42,18 +42,21 @@ from rest_framework.mixins import (
 from rest_framework.response import Response
 
 from mopito_project.core.api.views import BaseModelViewSet
+from mopito_project.users.models import OTP
 from mopito_project.users.api.serializers import (
     CreateUserSerializer,
     GroupSerializer,
     PasswordSerializer,
     PermissionSerializer,
+    PhoneOTPAuthTokenSerializer,
+    PhoneSerializer,
     SelfPasswordSerializer,
     UserDetailSerializer,
     UserSerializer, TokenObtainLifetimeSerializer, TokenRefreshLifetimeSerializer, 
      GroupDetailSerializer,
 )
 from rest_framework_simplejwt.views import TokenViewBase
-
+from rest_framework_simplejwt.tokens import RefreshToken
 from mopito_project.users.api.prevents import UserLoginRateThrottle
 # from hemodialyse.users.models import VisibilityGroup
 from mopito_project.utils.getUser import get_user_name
@@ -133,6 +136,36 @@ class UserViewSet(
 
         return Response(status=status.HTTP_400_BAD_REQUEST, data=serializer.errors)
 
+class ObtainPhoneOTPAuthToken(TokenViewBase):
+       def get_serializer_class(self):
+              return PhoneOTPAuthTokenSerializer
+
+       def post(self, request, *args, **kwargs):
+           serializer = PhoneOTPAuthTokenSerializer(data=request.data)
+           serializer.is_valid(raise_exception=True)
+           user = serializer.validated_data['user']
+           refresh = RefreshToken.for_user(user)
+           return Response({
+               'refresh': str(refresh),
+               'access': str(refresh.access_token),
+           }, status=status.HTTP_200_OK)
+
+class SendOTPView(TokenViewBase):
+       def get_serializer_class(self):
+           return PhoneSerializer
+
+       def post(self, request, *args, **kwargs):
+        #    phone_number = request.data.get('phone_number')
+           serializer = PhoneSerializer(data=request.data)
+           serializer.is_valid(raise_exception=True)
+           phone_number = serializer.validated_data['phone_number']
+           try:
+               user = User.objects.get(profile__phone_number=phone_number)
+               otp_instance = OTP.objects.create(user=user)
+            #    send_otp(phone_number, otp_instance.otp)
+               return Response({'message': 'OTP sent successfully'}, status=status.HTTP_200_OK)
+           except User.DoesNotExist:
+               return Response({'error': 'User with this phone number does not exist'}, status=status.HTTP_400_BAD_REQUEST)
 
 class TokenObtainPairView(TokenViewBase):
     """

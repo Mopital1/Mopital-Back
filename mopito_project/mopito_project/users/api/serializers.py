@@ -24,7 +24,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from mopito_project.core.api.serializers import BaseSerializer
 from mopito_project.utils import randomize_digit_char
-from mopito_project.users.models import User
+from mopito_project.users.models import OTP, User
 
 # from ..models import User, VisibilityGroup
 # from ...h_centers.api.serializers import HUniteSerializers
@@ -109,6 +109,7 @@ class CreateUserSerializer(BaseSerializer):
             "id",
             "is_active",
             "email",
+            # "username",
             "user_typ",
             "password",
             "groups",
@@ -216,3 +217,35 @@ class TokenRefreshLifetimeSerializer(TokenRefreshSerializer):
         refresh = RefreshToken(attrs['refresh'])
         data['lifetime'] = int(refresh.access_token.lifetime.total_seconds())
         return data
+
+class PhoneSerializer(serializers.Serializer):
+    phone_number = serializers.CharField()
+
+    def validate(self, attrs):
+        phone_number = attrs.get('phone_number')
+        if not phone_number:
+            raise serializers.ValidationError('Phone number is required')
+        return attrs
+
+class PhoneOTPAuthTokenSerializer(serializers.Serializer):
+       phone_number = serializers.CharField()
+       otp = serializers.CharField()
+
+       def validate(self, attrs):
+           phone_number = attrs.get('phone_number')
+           otp = attrs.get('otp')
+
+           try:
+               user = User.objects.get(profile__phone_number=phone_number)  # Assuming phone_number is stored in a related profile model
+           except User.DoesNotExist:
+               raise serializers.ValidationError('User with this phone number does not exist')
+
+           try:
+               otp_instance = OTP.objects.get(user=user, otp=otp)
+               if not otp_instance.is_valid():
+                   raise serializers.ValidationError('Invalid or expired OTP')
+           except OTP.DoesNotExist:
+               raise serializers.ValidationError('Invalid OTP')
+
+           attrs['user'] = user
+           return attrs

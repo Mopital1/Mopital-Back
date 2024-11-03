@@ -10,7 +10,7 @@ from drf_spectacular.views import SpectacularAPIView
 from drf_spectacular.views import SpectacularSwaggerView
 from rest_framework.authtoken.views import obtain_auth_token
 
-from mopito_project.users.api.views import TokenObtainPairView, TokenRefreshView
+from mopito_project.users.api.views import ObtainPhoneOTPAuthToken, SendOTPView, TokenObtainPairView, TokenRefreshView
 
 urlpatterns = [
     path("", TemplateView.as_view(template_name="pages/home.html"), name="home"),
@@ -22,7 +22,7 @@ urlpatterns = [
     # Django Admin, use {% url 'admin:index' %}
     path(settings.ADMIN_URL, admin.site.urls),
     # User management
-    # path("users/", include("mopito_project.users.urls", namespace="users")),
+    path("users/", include("mopito_project.users.urls", namespace="users")),
     path("accounts/", include("allauth.urls")),
     # Your stuff: custom urls includes go here
     # ...
@@ -38,6 +38,9 @@ urlpatterns += [
     path('api/auth/token/', TokenObtainPairView.as_view(), name='token-obtain'),
     path('api/auth/refresh-token/', TokenRefreshView.as_view(), name='token-refresh'),
     # path("api/auth-token/", obtain_auth_token),
+    # auth using otp token
+    path('api/auth/token-otp/', ObtainPhoneOTPAuthToken.as_view(), name='token_obtain_pair'),
+    path('api/send-otp/', SendOTPView.as_view(), name='send_otp'),
     path("api/schema/", SpectacularAPIView.as_view(), name="api-schema"),
     path(
         "api/docs/",
