@@ -24,7 +24,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from mopito_project.core.api.serializers import BaseSerializer
 from mopito_project.utils import randomize_digit_char
-from mopito_project.users.models import OTP, User
+from mopito_project.users.models import OTP, Profile, User
 
 # from ..models import User, VisibilityGroup
 # from ...h_centers.api.serializers import HUniteSerializers
@@ -93,6 +93,20 @@ class GroupDetailSerializer(BaseSerializer):
         permissions = Permission.objects.filter(group=obj)
         return PermissionSerializer(permissions, many=True).data
 
+class ProfileSerializer(BaseSerializer):
+    class Meta:
+        model = Profile
+        fields = (
+            "id",
+            "phone_number",
+            "username",
+            "first_name",
+            "last_name",
+            "gender",
+            "dob",
+            "profile_picture_file",
+            "code"
+        )
 
 class UserSerializer(BaseSerializer):
     class Meta:
@@ -100,7 +114,6 @@ class UserSerializer(BaseSerializer):
         fields = (
             "id", "is_active", "email", "password", "user_typ")
         extra_kwargs = {"password": {"write_only": True}}
-
 
 class CreateUserSerializer(BaseSerializer):
     class Meta:

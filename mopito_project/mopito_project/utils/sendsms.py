@@ -18,4 +18,4 @@ def send_otp(user_id, message, password, phone_str, sender_name="Mopito"):
     if response.status_code == 200:
         return response.json()
     else:
-        response.raise_for_status()
+        return response.raise_for_status()

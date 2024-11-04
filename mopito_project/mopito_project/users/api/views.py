@@ -42,6 +42,7 @@ from rest_framework.mixins import (
 from rest_framework.response import Response
 
 from mopito_project.core.api.views import BaseModelViewSet
+from mopito_project.utils.sendsms import send_otp
 from mopito_project.users.models import OTP
 from mopito_project.users.api.serializers import (
     CreateUserSerializer,
@@ -162,7 +163,7 @@ class SendOTPView(TokenViewBase):
            try:
                user = User.objects.get(profile__phone_number=phone_number)
                otp_instance = OTP.objects.create(user=user)
-            #    send_otp(phone_number, otp_instance.otp)
+               send_otp(phone_number, otp_instance.otp)
                return Response({'message': 'OTP sent successfully'}, status=status.HTTP_200_OK)
            except User.DoesNotExist:
                return Response({'error': 'User with this phone number does not exist'}, status=status.HTTP_400_BAD_REQUEST)

@@ -5,24 +5,6 @@ from mopito_project.core.models import BaseModel
 
 # Create your models here.
 
-class BaseActors(BaseModel):
-    """
-    Base model of staff entities (WorkManager and Guarantor)
-    """
-    Sex = (("M", "MALE"), ("F", "FEMALE"))
-
-    first_name = models.CharField(_("first_name"), max_length=50, null=True, blank=True)
-    last_name = models.CharField(_("first_name"), max_length=50, null=True, blank=True)
-    gender = models.CharField(_("gender"), max_length=10, choices=Sex, default="M")
-    code = models.CharField(_("code"), max_length=50, null=False, blank=False, default="1234")
-    dob = models.DateTimeField(_("dob"), default=None, blank=True, null=True)
-    profile_picture_file = models.FileField(
-        _("profile_picture_file"), null=True, blank=True, upload_to="profile_picture/%Y/%m/%D/"
-    )
-    email = models.CharField(_("email"), max_length=100, null=True, blank=True)
-
-    class Meta:
-        abstract = True
 
 class Patients(BaseModel):
     height = models.FloatField(_("height"), null=True, blank=True)
@@ -38,23 +20,56 @@ class Patients(BaseModel):
     # def __str__(self):
     #     return f"{self.first_name} {self.last_name}"
     
-# class Staffs(BaseModel):
-#     staff_type = (
-#     ("NURSE", "NURSE"), ("GENERALIST", "GENERALIST"), ("SPECIALIST", "SPECIALIST"), ("CASHIER", "CASHIER"))
-#     type = models.CharField(_("type"), max_length=10, choices=staff_type, default="NURSE")
-#     # h_unite = models.ForeignKey(
-#     #     HUnite,
-#     #     on_delete=models.CASCADE,
-#     #     null=True,
-#     #     blank=True,
-#     #     related_name="staffs",
-#     # )
+class Staffs(BaseModel):
+    staff_type = (
+    ("NURSE", "NURSE"), ("GENERALIST", "GENERALIST"), ("SPECIALIST", "SPECIALIST"), ("CASHIER", "CASHIER"))
+    type = models.CharField(_("type"), max_length=10, choices=staff_type, default="NURSE")
+    # h_unite = models.ForeignKey(
+    #     HUnite,
+    #     on_delete=models.CASCADE,
+    #     null=True,
+    #     blank=True,
+    #     related_name="staffs",
+    # )
 
-#     class Meta:
-#         """
-#         the place to configure de class or entities
-#         """
-#         verbose_name = _("Staff")
-#         verbose_name_plural = _("Staffs")
-#         ordering = ("created_at",)
+    class Meta:
+        """
+        the place to configure de class or entities
+        """
+        verbose_name = _("Staff")
+        verbose_name_plural = _("Staffs")
+        ordering = ("created_at",)
+
+class TimeSlot(BaseModel):
+    start_time = models.TimeField(_("start_time"))
+    end_time = models.TimeField(_("end_time"))
+    staff = models.ForeignKey(Staffs, on_delete=models.CASCADE, related_name="time_slots")
+    is_available = models.BooleanField(_("is_available"), default=True)
+
+    class Meta:
+        """
+        the place to configure de class or entities
+        """
+        verbose_name = _("TimeSlot")
+        verbose_name_plural = _("TimeSlots")
+        ordering = ("created_at",)
     
+class Subscription(BaseModel):
+    subscription_type = (
+        ("MONTHLY", "MONTHLY"),
+        ("QUARTERLY", "QUARTERLY"),
+        ("YEARLY", "YEARLY"),
+    )
+    plan = models.CharField(_("plan"), max_length=10, choices=subscription_type, default="MONTHLY")
+    price = models.FloatField(_("price"), default=0.0)
+    staff = models.ForeignKey(Staffs, on_delete=models.CASCADE, related_name="subscriptions")
+    start_date = models.DateTimeField(_("start_date"))
+    end_date = models.DateTimeField(_("end_date"))
+
+    class Meta:
+        """
+        the place to configure de class or entities
+        """
+        verbose_name = _("Subscription")
+        verbose_name_plural = _("Subscriptions")
+        ordering = ("created_at",)
