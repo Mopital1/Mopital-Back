@@ -58,7 +58,7 @@ class Consultation(BaseModel):
     prescription = models.TextField(_("prescription"))
     result = models.TextField(_("result"))
     antecedent = models.TextField(_("antecedent"))
-    appointment = models.OneToOneField(Appointment, on_delete=models.CASCADE, related_name="prescription")
+    appointment = models.OneToOneField(Appointment, on_delete=models.CASCADE, related_name="consultation")
 
     class Meta:
         """Meta definition for Prescription."""

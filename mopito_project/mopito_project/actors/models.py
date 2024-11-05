@@ -9,13 +9,20 @@ from mopito_project.core.models import BaseModel
 class Patients(BaseModel):
     height = models.FloatField(_("height"), null=True, blank=True)
     weight = models.FloatField(_("weight"), null=True, blank=True)
+    patient_parent = models.ForeignKey(
+        "self",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="children",
+    )
     class Meta:
         """
         the place to configure de class or entities
         """
         verbose_name = _("Patient")
         verbose_name_plural = _("Patients")
-        ordering = ("created_at",)
+        ordering = ("-created_at",)
 
     # def __str__(self):
     #     return f"{self.first_name} {self.last_name}"
@@ -38,11 +45,11 @@ class Staffs(BaseModel):
         """
         verbose_name = _("Staff")
         verbose_name_plural = _("Staffs")
-        ordering = ("created_at",)
+        ordering = ("-created_at",)
 
 class TimeSlot(BaseModel):
-    start_time = models.TimeField(_("start_time"))
-    end_time = models.TimeField(_("end_time"))
+    start_time = models.DateTimeField(_("start_time"))
+    end_time = models.DateTimeField(_("end_time"))
     staff = models.ForeignKey(Staffs, on_delete=models.CASCADE, related_name="time_slots")
     is_available = models.BooleanField(_("is_available"), default=True)
 
@@ -52,7 +59,7 @@ class TimeSlot(BaseModel):
         """
         verbose_name = _("TimeSlot")
         verbose_name_plural = _("TimeSlots")
-        ordering = ("created_at",)
+        ordering = ("-created_at",)
     
 class Subscription(BaseModel):
     subscription_type = (
@@ -72,4 +79,4 @@ class Subscription(BaseModel):
         """
         verbose_name = _("Subscription")
         verbose_name_plural = _("Subscriptions")
-        ordering = ("created_at",)
+        ordering = ("-created_at",)
