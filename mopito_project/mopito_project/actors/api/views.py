@@ -6,7 +6,7 @@ from rest_framework import filters, mixins, status
 
 from mopito_project.core.api.views import BaseModelViewSet
 from mopito_project.actors.models import Patients, Staffs, Subscription, TimeSlot
-from mopito_project.actors.api.serializers import PatientSerializer, StaffSerializer, SubscriptionSerializer, TimeSlotSerializer
+from mopito_project.actors.api.serializers import PatientSerializer, StaffSerializer, SubscriptionDetailSerializer, SubscriptionSerializer, TimeSlotDetailSerializer, TimeSlotSerializer
 
 
 class PatientViewSet(BaseModelViewSet, mixins.ListModelMixin,
@@ -65,6 +65,11 @@ class TimeSlotViewSet(BaseModelViewSet, mixins.ListModelMixin,
     ordering_fields = ["updated_at", "created_at"]
     ordering = ["-updated_at", "-created_at"]
 
+    def get_serializer_class(self):
+        if self.action == "list" or self.action == "retrieve":
+            return TimeSlotDetailSerializer
+        return TimeSlotSerializer
+
 class SubscriptionsViewSet(BaseModelViewSet, mixins.ListModelMixin,
                              mixins.RetrieveModelMixin,
                              mixins.UpdateModelMixin,
@@ -83,6 +88,11 @@ class SubscriptionsViewSet(BaseModelViewSet, mixins.ListModelMixin,
     search_fields = ["patient__user__profile__first_name", "staff__user__profile__first_name"]
     ordering_fields = ["updated_at", "created_at"]
     ordering = ["-updated_at", "-created_at"]
+
+    def get_serializer_class(self):
+        if self.action == "list" or self.action == "retrieve":
+            return SubscriptionDetailSerializer
+        return SubscriptionSerializer
 
 
 
