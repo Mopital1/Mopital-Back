@@ -1,6 +1,6 @@
 
 from mopito_project.core.api.serializers import BaseSerializer
-from mopito_project.actors.models import Patients, Staffs, Subscription
+from mopito_project.actors.models import Clinical, Patients, Staffs, Subscription
 from mopito_project.mopito_project.users.models import User
 from mopito_project.users.api.serializers import ProfileSerializer, UserSerializer
 
@@ -98,7 +98,7 @@ class TimeSlotDetailSerializer(BaseSerializer):
             "updated_at"
         )
         read_only_fields = ("id", "created_at", "updated_at",)
-        
+
 class SubscriptionSerializer(BaseSerializer):
     class Meta:
         model = Subscription
@@ -125,6 +125,42 @@ class SubscriptionDetailSerializer(BaseSerializer):
             "start_date",
             "end_date",
             "staff",
+            "created_at",
+            "updated_at",
+        )
+        read_only_fields = ("id", "created_at", "updated_at",)
+
+class ClinicSerializer(BaseSerializer):
+    class Meta:
+        model = Clinical
+        fields = (
+            "id",
+            "name",
+            "description",
+            "address",
+            "phone_number",
+            "email",
+            "start_time",
+            "end_time",
+            "created_at",
+            "updated_at",
+        )
+        read_only_fields = ("id", "created_at", "updated_at",)
+
+class ClinicDetailSerializer(BaseSerializer):
+    staffs = StaffDetailSerializer(many=True)
+    class Meta:
+        model = Clinical
+        fields = (
+            "id",
+            "name",
+            "description",
+            "address",
+            "phone_number",
+            "email",
+            "start_time",
+            "end_time",
+            "staffs",
             "created_at",
             "updated_at",
         )

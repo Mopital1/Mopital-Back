@@ -5,8 +5,8 @@ from rest_framework.response import Response
 from rest_framework import filters, mixins, status
 
 from mopito_project.core.api.views import BaseModelViewSet
-from mopito_project.actors.models import Patients, Staffs, Subscription, TimeSlot
-from mopito_project.actors.api.serializers import PatientDetailSerializer, PatientSerializer, StaffDetailSerializer, StaffSerializer, SubscriptionDetailSerializer, SubscriptionSerializer, TimeSlotDetailSerializer, TimeSlotSerializer
+from mopito_project.actors.models import Clinics,  Patients, Staffs, Subscriptions, TimeSlots
+from mopito_project.actors.api.serializers import ClinicDetailSerializer, ClinicSerializer, PatientDetailSerializer, PatientSerializer, StaffDetailSerializer, StaffSerializer, SubscriptionDetailSerializer, SubscriptionSerializer, TimeSlotDetailSerializer, TimeSlotSerializer
 
 
 class PatientViewSet(BaseModelViewSet, mixins.ListModelMixin,
@@ -63,7 +63,7 @@ class TimeSlotViewSet(BaseModelViewSet, mixins.ListModelMixin,
                              mixins.RetrieveModelMixin,
                              mixins.UpdateModelMixin,
                              mixins.CreateModelMixin,):
-    queryset = TimeSlot.objects.filter(is_active=True)
+    queryset = TimeSlots.objects.filter(is_active=True)
     serializer_class = TimeSlotSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = {
@@ -84,11 +84,11 @@ class TimeSlotViewSet(BaseModelViewSet, mixins.ListModelMixin,
             return TimeSlotDetailSerializer
         return TimeSlotSerializer
 
-class SubscriptionsViewSet(BaseModelViewSet, mixins.ListModelMixin,
+class SubscriptionViewSet(BaseModelViewSet, mixins.ListModelMixin,
                              mixins.RetrieveModelMixin,
                              mixins.UpdateModelMixin,
                              mixins.CreateModelMixin,):
-    queryset = Subscription.objects.filter(is_active=True)
+    queryset = Subscriptions.objects.filter(is_active=True)
     serializer_class = SubscriptionSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = {
@@ -108,7 +108,33 @@ class SubscriptionsViewSet(BaseModelViewSet, mixins.ListModelMixin,
             return SubscriptionDetailSerializer
         return SubscriptionSerializer
 
+class ClinicViewSet(BaseModelViewSet, mixins.ListModelMixin,
+                             mixins.RetrieveModelMixin,
+                             mixins.UpdateModelMixin,
+                             mixins.CreateModelMixin,):
+    queryset = Clinics.objects.filter(is_active=True)
+    serializer_class = ClinicSerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = {
+        "name": ['exact', 'contains'],
+        "address": ['exact', 'contains'],
+        "phone_number": ['exact', 'contains'],
+        "staffs__id": ['exact'],
+        # "staffs__user__profile__first_name": ['exact', 'contains'],
+        # "email": ['exact', 'contains'],
+        "start_time": ['gte', 'lte', 'exact', 'gt', 'lt'],
+        "end_time": ['gte', 'lte', 'exact', 'gt', 'lt'],
+        "updated_at": ['gte', 'lte', 'exact', 'gt', 'lt'],
+        "created_at": ['gte', 'lte', 'exact', 'gt', 'lt']
+    }
+    search_fields = ["name", "address", "phone_number", "email"]
+    ordering_fields = ["updated_at", "created_at", "name"]
+    ordering = ["-updated_at", "-created_at"]
 
+    def get_serializer_class(self):
+        if self.action == "list" or self.action == "retrieve":
+            return ClinicDetailSerializer
+        return ClinicSerializer
 
 
 """

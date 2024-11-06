@@ -47,7 +47,7 @@ class Staffs(BaseModel):
         verbose_name_plural = _("Staffs")
         ordering = ("-created_at",)
 
-class TimeSlot(BaseModel):
+class TimeSlots(BaseModel):
     start_time = models.DateTimeField(_("start_time"))
     end_time = models.DateTimeField(_("end_time"))
     staff = models.ForeignKey(Staffs, on_delete=models.CASCADE, related_name="time_slots")
@@ -61,7 +61,7 @@ class TimeSlot(BaseModel):
         verbose_name_plural = _("TimeSlots")
         ordering = ("-created_at",)
     
-class Subscription(BaseModel):
+class Subscriptions(BaseModel):
     subscription_type = (
         ("MONTHLY", "MONTHLY"),
         ("QUARTERLY", "QUARTERLY"),
@@ -72,6 +72,8 @@ class Subscription(BaseModel):
     staff = models.ForeignKey(Staffs, on_delete=models.CASCADE, related_name="subscriptions")
     start_date = models.DateTimeField(_("start_date"))
     end_date = models.DateTimeField(_("end_date"))
+    has_expired = models.BooleanField(_("has_expired"), default=False)
+    
 
     class Meta:
         """
@@ -80,3 +82,23 @@ class Subscription(BaseModel):
         verbose_name = _("Subscription")
         verbose_name_plural = _("Subscriptions")
         ordering = ("-created_at",)
+
+
+class Clinics(BaseModel):
+    name = models.CharField(_("name"), max_length=200)
+    description = models.TextField(_("description"))
+    address = models.TextField(_("address"))
+    phone_number = models.CharField(_("phone_number"), max_length=20)
+    email = models.EmailField(_("email"), max_length=254)
+    start_time = models.TimeField(_("start_time"))
+    end_time = models.TimeField(_("end_time"))
+    staffs = models.ManyToManyField(Staffs, related_name="clinics")
+
+    class Meta:
+        """
+        the place to configure de class or entities
+        """
+        verbose_name = _("Clinical")
+        verbose_name_plural = _("Clinicals")
+        ordering = ("-created_at",)
+
