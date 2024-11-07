@@ -31,13 +31,6 @@ class Staffs(BaseModel):
     staff_type = (
     ("NURSE", "NURSE"), ("GENERALIST", "GENERALIST"), ("SPECIALIST", "SPECIALIST"), ("CASHIER", "CASHIER"))
     type = models.CharField(_("type"), max_length=10, choices=staff_type, default="NURSE")
-    # h_unite = models.ForeignKey(
-    #     HUnite,
-    #     on_delete=models.CASCADE,
-    #     null=True,
-    #     blank=True,
-    #     related_name="staffs",
-    # )
 
     class Meta:
         """

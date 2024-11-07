@@ -1,7 +1,7 @@
 
 from mopito_project.core.api.serializers import BaseSerializer
-from mopito_project.actors.models import Clinical, Patients, Staffs, Subscription
-from mopito_project.mopito_project.users.models import User
+from mopito_project.actors.models import Clinics, Patients, Staffs, Subscriptions, TimeSlots
+from mopito_project.users.models import User
 from mopito_project.users.api.serializers import ProfileSerializer, UserSerializer
 
 
@@ -73,7 +73,7 @@ class StaffDetailSerializer(BaseSerializer):
 
 class TimeSlotSerializer(BaseSerializer):
     class Meta:
-        model = Staffs
+        model = TimeSlots
         fields = (
             "id",
             "start_time",
@@ -87,7 +87,7 @@ class TimeSlotSerializer(BaseSerializer):
 class TimeSlotDetailSerializer(BaseSerializer):
     staff = StaffDetailSerializer()
     class Meta:
-        model = Staffs
+        model = TimeSlots
         fields = (
             "id",
             "start_time",
@@ -101,7 +101,7 @@ class TimeSlotDetailSerializer(BaseSerializer):
 
 class SubscriptionSerializer(BaseSerializer):
     class Meta:
-        model = Subscription
+        model = Subscriptions
         fields = (
             "id",
             "plan",
@@ -117,7 +117,7 @@ class SubscriptionSerializer(BaseSerializer):
 class SubscriptionDetailSerializer(BaseSerializer):
     staff = StaffDetailSerializer()
     class Meta:
-        model = Subscription
+        model = Subscriptions
         fields = (
             "id",
             "plan",
@@ -132,7 +132,7 @@ class SubscriptionDetailSerializer(BaseSerializer):
 
 class ClinicSerializer(BaseSerializer):
     class Meta:
-        model = Clinical
+        model = Clinics
         fields = (
             "id",
             "name",
@@ -150,7 +150,7 @@ class ClinicSerializer(BaseSerializer):
 class ClinicDetailSerializer(BaseSerializer):
     staffs = StaffDetailSerializer(many=True)
     class Meta:
-        model = Clinical
+        model = Clinics
         fields = (
             "id",
             "name",

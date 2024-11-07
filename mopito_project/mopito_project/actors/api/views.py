@@ -18,7 +18,7 @@ class PatientViewSet(BaseModelViewSet, mixins.ListModelMixin,
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = {
         "user__profile_id": ['exact'],
-        "user__profile__name": ['exact', 'contains'],
+        "user__profile__first_name": ['exact', 'contains'],
         "user__profile__phone_number": ['exact', 'contains'],
         "patient_parent_id": ['exact'],
         "updated_at": ['gte', 'lte', 'exact', 'gt', 'lt'],
@@ -43,9 +43,11 @@ class StaffViewSet(BaseModelViewSet, mixins.ListModelMixin,
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = {
         "user__profile_id": ['exact'],
-        "user__profile__name": ['exact', 'contains'],
+        "user__profile__first_name": ['exact', 'contains'],
         "user__profile__phone_number": ['exact', 'contains'],
-        "staff_parent_id": ['exact'],
+        "type": ['exact'],
+        "clinics__id": ['exact'],
+        # "staff_parent_id": ['exact'],
         "updated_at": ['gte', 'lte', 'exact', 'gt', 'lt'],
         "created_at": ['gte', 'lte', 'exact', 'gt', 'lt']
     }
@@ -92,7 +94,7 @@ class SubscriptionViewSet(BaseModelViewSet, mixins.ListModelMixin,
     serializer_class = SubscriptionSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = {
-        "patient_id": ['exact'],
+        # "patient_id": ['exact'],
         "staff_id": ['exact'],
         "start_date": ['gte', 'lte', 'exact', 'gt', 'lt'],
         "end_date": ['gte', 'lte', 'exact', 'gt', 'lt'],

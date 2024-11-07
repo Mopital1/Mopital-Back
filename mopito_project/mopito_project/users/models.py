@@ -12,7 +12,7 @@ from django.utils.translation import gettext_lazy as _
 from model_utils.models import TimeStampedModel
 
 from mopito_project.core.models import BaseModel, BaseModelUser
-from mopito_project.actors.models import Patients
+from mopito_project.actors.models import Patients, Staffs
 # Staffs
 
 
@@ -108,51 +108,6 @@ class AbstractUser(AbstractBaseUser, PermissionsMixin):
         send_mail(subject, message, from_email, [self.email], **kwargs)
 
 
-class User(AbstractUser, BaseModelUser):
-    """
-    Users within the Django authentication system are represented by this
-    model.
-    Email and password are required. Other fields are optional.
-    """
-
-    UserTyp = (
-        ("PATIENT", "PATIENT"),
-        ("STAFF", "STAFF"),
-        ("ADMIN", "ADMIN"),
-    )
-
-    user_typ = models.CharField(_("user_typ"), max_length=20, choices=UserTyp, default="ADMIN")
-    profile = models.OneToOneField(
-        "Profile",
-        on_delete=models.CASCADE,
-        null=True,
-        blank=True,
-        related_name="user",
-    )
-
-    # est rattaché ou pas à une clinique
-
-    patient = models.OneToOneField(
-        Patients,
-        on_delete=models.CASCADE,
-        null=True,
-        blank=True,
-        related_name="user",
-    )
-
-    # staff = models.OneToOneField(
-    #     Staffs,
-    #     on_delete=models.CASCADE,
-    #     null=True,
-    #     blank=True,
-    #     related_name="user",
-    # )
-
-    class Meta(AbstractUser.Meta):
-        swappable = "AUTH_USER_MODEL"
-
-
-# classe pour le profile de l'utilisateur
 class Profile(BaseModel):
     """
     class for user profile
@@ -181,6 +136,50 @@ class Profile(BaseModel):
     profile_picture_file = models.FileField(
         _("profile_picture_file"), null=True, blank=True, upload_to="profile_picture/%Y/%m/%D/"
     )
+
+class User(AbstractUser, BaseModelUser):
+    """
+    Users within the Django authentication system are represented by this
+    model.
+    Email and password are required. Other fields are optional.
+    """
+
+    UserTyp = (
+        ("PATIENT", "PATIENT"),
+        ("STAFF", "STAFF"),
+        ("ADMIN", "ADMIN"),
+    )
+
+    user_typ = models.CharField(_("user_typ"), max_length=20, choices=UserTyp, default="ADMIN")
+    profile = models.OneToOneField(
+        Profile,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="user",
+    )
+
+    # est rattaché ou pas à une clinique
+
+    patient = models.OneToOneField(
+        Patients,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="user",
+    )
+
+    staff = models.OneToOneField(
+        Staffs,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="user",
+    )
+
+    class Meta(AbstractUser.Meta):
+        swappable = "AUTH_USER_MODEL"
+
 
 class OTP(TimeStampedModel):
     user = models.ForeignKey(
