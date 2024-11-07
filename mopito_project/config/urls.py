@@ -34,6 +34,8 @@ urlpatterns = [
 urlpatterns += [
     # API base url
     path("api/", include("config.api_router")),
+    path("api/", include("mopito_project.actors.urls")),
+    path("api/", include("mopito_project.appointments.urls")),
     # DRF auth token
     path('api/auth/token/', TokenObtainPairView.as_view(), name='token-obtain'),
     path('api/auth/refresh-token/', TokenRefreshView.as_view(), name='token-refresh'),

@@ -94,6 +94,7 @@ LOCAL_APPS = [
     "mopito_project.users",
     "mopito_project.core",
     "mopito_project.actors",
+    "mopito_project.appointments",
     # Your stuff: custom apps go here
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
