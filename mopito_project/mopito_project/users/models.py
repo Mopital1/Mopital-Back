@@ -201,20 +201,20 @@ class OTP(TimeStampedModel):
         super(TimeStampedModel, self).save(*args, **kwargs)
 
 
-    def is_valid(self, obj):
+    def is_valid(self):
         # Add logic to check if OTP is still valid (e.g., not expired)
         # return True
-        otp = obj
-        if otp.used:
+        # otp = self.objects.get(otp=self.otp)
+        if self.used:
             return False
-        expired_at = otp.created + timedelta(minutes=settings.VALID_TOKEN_TIME)
+        expired_at = self.created + timedelta(minutes=settings.VALID_TOKEN_TIME)
         now = pytz.utc.localize(datetime.now())
 
         if now < expired_at:
             return True
 
-        otp.used = True
-        otp.save()
+        self.used = True
+        self.save()
 
         return False
    

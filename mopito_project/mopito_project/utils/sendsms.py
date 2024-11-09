@@ -1,12 +1,17 @@
 import requests
 
-def send_otp(user_id, message, password, phone_str, sender_name="Mopito"):
-    url = "https://mboadeals.net/api/v1/sms/sendsms"
+from config.settings.base import SMS_API_PASSWORD, SMS_API_URL, SMS_API_USER_ID
+
+def send_otp(phone_number, otp, sender_name="Mopital"):
+    
+    message = f"Votre code de vérification est {otp}"
+    url = SMS_API_URL
+
     payload = {
-        "user_id": user_id,
+        "user_id": SMS_API_USER_ID,
         "message": message,
-        "password": password,
-        "phone_str": phone_str,
+        "password": SMS_API_PASSWORD,
+        "phone_str": phone_number,
         "sender_name": sender_name
     }
     headers = {
@@ -16,6 +21,8 @@ def send_otp(user_id, message, password, phone_str, sender_name="Mopito"):
     response = requests.post(url, json=payload, headers=headers)
     
     if response.status_code == 200:
-        return response.json()
+        # return response.json()
+        print(response.json())
     else:
-        return response.raise_for_status()
+        # return response.raise_for_status()
+        print(response.raise_for_status())

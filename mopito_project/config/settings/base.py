@@ -238,6 +238,11 @@ EMAIL_TIMEOUT = 5
 # Token Times IN Minutes
 VALID_TOKEN_TIME = 30
 
+# credentials for sending sms api
+SMS_API_USER_ID = "672b1bcd4e56e50021fbe14b"
+SMS_API_PASSWORD = "P@ris2024" 
+SMS_API_URL = "https://mboadeals.net/api/v1/sms/sendsms"
+
 # ADMIN
 # ------------------------------------------------------------------------------
 # Django Admin URL.

@@ -43,7 +43,7 @@ from rest_framework.response import Response
 
 from mopito_project.core.api.views import BaseModelViewSet
 from mopito_project.utils.sendsms import send_otp
-from mopito_project.users.models import OTP
+from mopito_project.users.models import OTP, Profile
 from mopito_project.users.api.serializers import (
     CreateUserSerializer,
     GroupSerializer,
@@ -51,6 +51,7 @@ from mopito_project.users.api.serializers import (
     PermissionSerializer,
     PhoneOTPAuthTokenSerializer,
     PhoneSerializer,
+    ProfileSerializer,
     SelfPasswordSerializer,
     UserDetailSerializer,
     UserSerializer, TokenObtainLifetimeSerializer, TokenRefreshLifetimeSerializer, 
@@ -137,6 +138,26 @@ class UserViewSet(
 
         return Response(status=status.HTTP_400_BAD_REQUEST, data=serializer.errors)
 
+class ProfileViewSet(
+        CreateModelMixin,
+        DestroyModelMixin,
+        ListModelMixin,
+        RetrieveModelMixin,
+        UpdateModelMixin,
+        BaseModelViewSet,):
+    queryset = Profile.objects.filter(is_active=True)
+    serializer_class = ProfileSerializer
+    filter_backends = [
+        DjangoFilterBackend,
+        filters.SearchFilter,
+        filters.OrderingFilter,
+    ]
+    filterset_fields = ["first_name", "last_name", "phone_number", "is_active"]
+    search_fields = ["first_name", "last_name", "phone_number"]
+    ordering_fields = ["updated_at", "created_at"]
+    ordering = ["-updated_at", "-created_at"]
+    
+
 class ObtainPhoneOTPAuthToken(TokenViewBase):
        def get_serializer_class(self):
               return PhoneOTPAuthTokenSerializer
@@ -163,7 +184,7 @@ class SendOTPView(TokenViewBase):
            try:
                user = User.objects.get(profile__phone_number=phone_number)
                otp_instance = OTP.objects.create(user=user)
-               send_otp(phone_number, otp_instance.otp)
+            #    send_otp(phone_number, otp_instance.otp)
                return Response({'message': 'OTP sent successfully'}, status=status.HTTP_200_OK)
            except User.DoesNotExist:
                return Response({'error': 'User with this phone number does not exist'}, status=status.HTTP_400_BAD_REQUEST)

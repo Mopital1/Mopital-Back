@@ -94,12 +94,16 @@ class GroupDetailSerializer(BaseSerializer):
         return PermissionSerializer(permissions, many=True).data
 
 class ProfileSerializer(BaseSerializer):
+    user_typ = serializers.CharField(required=False, write_only=True)
+    email = serializers.EmailField(required=False, write_only=True)
     class Meta:
         model = Profile
         fields = (
             "id",
             "phone_number",
             "username",
+            "email",
+            "user_typ",
             "first_name",
             "last_name",
             "gender",
@@ -107,6 +111,31 @@ class ProfileSerializer(BaseSerializer):
             "profile_picture_file",
             "code"
         )
+
+    def create(self, validated_data):
+        """
+        Créer le profil et l'utilisateur associé
+        """
+        user_typ = validated_data.pop("user_typ", "PATIENT")
+        email = validated_data.pop("email", "default@gmail.com")
+        password = validated_data.pop("password", None)
+    
+        # Créer le profil
+        profile = Profile.objects.create(**validated_data)
+    
+        # Créer l'utilisateur
+        user = User.objects.create(
+            profile_id=profile.id,
+            email=email,
+            user_typ=user_typ,
+        )
+    
+        # Définir le mot de passe
+        if password:
+            user.set_password(password)
+            user.save()
+    
+        return profile
 
 class UserSerializer(BaseSerializer):
     class Meta:
