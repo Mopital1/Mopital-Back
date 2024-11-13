@@ -14,7 +14,7 @@ SECRET_KEY = env(
     default="155CQ8ZWArBOJSQ55onxqd4SkdIW9i3DCTcvAMs5JzaU249Xq16rzNdT9c7sbpsS",
 )
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
-ALLOWED_HOSTS = ["localhost", "0.0.0.0", "127.0.0.1"]  # noqa: S104
+ALLOWED_HOSTS = ["localhost", "0.0.0.0", "127.0.0.1", "api.mopital.com"]  # noqa: S104
 
 # CACHES
 # ------------------------------------------------------------------------------

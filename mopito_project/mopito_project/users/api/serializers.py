@@ -93,31 +93,78 @@ class GroupDetailSerializer(BaseSerializer):
         permissions = Permission.objects.filter(group=obj)
         return PermissionSerializer(permissions, many=True).data
 
+class CreateProfileSerializer(BaseSerializer):
+    user_typ = serializers.CharField(required=False, write_only=True)
+    class Meta:
+        model = Profile
+        fields = (
+            "phone_number",
+            "username",
+            "user_typ",
+            "first_name",
+            "last_name")
+
+    def create(self, validated_data):
+        user_typ = validated_data.pop("user_typ", "PATIENT")
+        profile = Profile.objects.create(**validated_data)
+        user = User.objects.create(
+            profile_id=profile.id,
+            user_typ=user_typ,
+        )
+        return profile
+
+class CompleteProfileSerializer(BaseSerializer):
+    email = serializers.EmailField(required=False, write_only=True)
+    height = serializers.FloatField(required=False, write_only=True)
+    weight = serializers.FloatField(required=False, write_only=True)
+    class Meta:
+        model = Profile
+        fields = (
+            "phone_number",
+            "email",
+            "height", 
+            "weight",
+            "first_name",
+            "last_name",
+            "dob",
+            "gender"
+        )
+    def validate(self, data):
+        # Ajoutez ici des validations supplémentaires si nécessaire
+        phone_number = data.get("phone_number")
+        if not Profile.objects.filter(phone_number=phone_number).exists():
+            raise serializers.ValidationError("Profile with this phone number does not exist.")
+        return data
+
+
+
 class ProfileSerializer(BaseSerializer):
     user_typ = serializers.CharField(required=False, write_only=True)
-    email = serializers.EmailField(required=False, write_only=True)
+    # email = serializers.EmailField(required=False, write_only=True)
     class Meta:
         model = Profile
         fields = (
             "id",
             "phone_number",
             "username",
-            "email",
             "user_typ",
             "first_name",
             "last_name",
             "gender",
             "dob",
             "profile_picture_file",
-            "code"
+            "code",
+            "created_at", 
+            "updated_at"
         )
+    read_only_fields = ("id", "created_at", "updated_at",)
 
     def create(self, validated_data):
         """
         Créer le profil et l'utilisateur associé
         """
         user_typ = validated_data.pop("user_typ", "PATIENT")
-        email = validated_data.pop("email", "default@gmail.com")
+        # email = validated_data.pop("email", "default@gmail.com")
         password = validated_data.pop("password", None)
     
         # Créer le profil
@@ -126,10 +173,9 @@ class ProfileSerializer(BaseSerializer):
         # Créer l'utilisateur
         user = User.objects.create(
             profile_id=profile.id,
-            email=email,
+            # email=email,
             user_typ=user_typ,
         )
-    
         # Définir le mot de passe
         if password:
             user.set_password(password)

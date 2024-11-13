@@ -11,6 +11,9 @@ BASE_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
 APPS_DIR = BASE_DIR / "mopito_project"
 env = environ.Env()
 
+import secrets
+SECRET_KEY = secrets.token_urlsafe(50)
+
 READ_DOT_ENV_FILE = env.bool("DJANGO_READ_DOT_ENV_FILE", default=False)
 if READ_DOT_ENV_FILE:
     # OS environment variables take precedence over variables from .env
@@ -356,7 +359,7 @@ SIMPLE_JWT = {
 }
 
 # django-cors-headers - https://github.com/adamchainz/django-cors-headers#setup
-CORS_ALLOWED_ORIGINS = ["http://localhost:4200", "http://*"]
+CORS_ALLOWED_ORIGINS = ["http://localhost:4200", "http://*", "https://*", "https://api.mopito.com"]
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ORIGIN_WHITELIST = ("http://localhost:3002", "http://*")
 CORS_ALLOW_HEADERS = [

@@ -42,9 +42,12 @@ from rest_framework.mixins import (
 from rest_framework.response import Response
 
 from mopito_project.core.api.views import BaseModelViewSet
+from mopito_project.mopito_project.actors.models import Patients
 from mopito_project.utils.sendsms import send_otp
 from mopito_project.users.models import OTP, Profile
 from mopito_project.users.api.serializers import (
+    CompleteProfileSerializer,
+    CreateProfileSerializer,
     CreateUserSerializer,
     GroupSerializer,
     PasswordSerializer,
@@ -156,7 +159,38 @@ class ProfileViewSet(
     search_fields = ["first_name", "last_name", "phone_number"]
     ordering_fields = ["updated_at", "created_at"]
     ordering = ["-updated_at", "-created_at"]
-    
+
+    def get_serializer_class(self):
+        if self.action == "create":
+            return CreateProfileSerializer
+        if self.action == "complete_profile":
+            return CompleteProfileSerializer
+        return ProfileSerializer
+
+    @action(detail=False, methods=["post"])
+    def complete_profile(self, request, *args, **kwargs):
+        serializer = CompleteProfileSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(status=status.HTTP_400_BAD_REQUEST, data=serializer.errors)
+        
+        phone_number = serializer.validated_data.get("phone_number")
+        height = serializer.validated_data.get("height")
+        weight = serializer.validated_data.get("weight")
+
+        patient = Patients.objects.create(height=height, weight=weight)
+
+        profile = Profile.objects.get(phone_number=phone_number)
+        
+        profile.gender = serializer.validated_data.get("gender")
+        profile.dob = serializer.validated_data.get("dob")
+        profile.save()
+
+        user = User.objects.get(profile=profile)
+        user.email = serializer.validated_data.get("email")
+        user.patient = patient
+        user.save()
+
+        return Response(serializer.data)
 
 class ObtainPhoneOTPAuthToken(TokenViewBase):
        def get_serializer_class(self):
@@ -184,7 +218,7 @@ class SendOTPView(TokenViewBase):
            try:
                user = User.objects.get(profile__phone_number=phone_number)
                otp_instance = OTP.objects.create(user=user)
-            #    send_otp(phone_number, otp_instance.otp)
+               send_otp(phone_number, otp_instance.otp)
                return Response({'message': 'OTP sent successfully'}, status=status.HTTP_200_OK)
            except User.DoesNotExist:
                return Response({'error': 'User with this phone number does not exist'}, status=status.HTTP_400_BAD_REQUEST)
