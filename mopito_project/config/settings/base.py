@@ -11,8 +11,8 @@ BASE_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
 APPS_DIR = BASE_DIR / "mopito_project"
 env = environ.Env()
 
-import secrets
-SECRET_KEY = secrets.token_urlsafe(50)
+# import secrets
+# SECRET_KEY = secrets.token_urlsafe(50)
 
 READ_DOT_ENV_FILE = env.bool("DJANGO_READ_DOT_ENV_FILE", default=False)
 if READ_DOT_ENV_FILE:
@@ -383,3 +383,7 @@ CORS_ALLOW_METHODS = [
         'DELETE',
         'OPTIONS'
     ]
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://api.mopital.com', 
+]
