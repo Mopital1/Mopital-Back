@@ -96,3 +96,20 @@ class Notification(BaseModel):
     #     return f"{self.notification_date} - {self.appointment}"
     # def get_absolute_url(self):
     #     return reverse("Notification_detail", kwargs={"pk": self.pk})
+
+# class Advertise(BaseModel):
+#     """Model definition for Advertise."""
+#     advertise_date = models.DateTimeField(_("advertise_date"), null=True, blank=True)
+#     content = models.TextField(_("content"), null=True, blank=True)
+    
+#     class Meta:
+#         """Meta definition for Advertise."""
+#         verbose_name = _("Advertise")
+#         verbose_name_plural = _("Advertises")
+#         ordering = ("created_at",)
+
+    # def __str__(self):
+    #     """Unicode representation of Advertise."""
+    #     return f"{self.advertise_date} - {self.appointment}"
+    # def get_absolute_url(self):
+    #     return reverse("Advertise_detail", kwargs={"pk": self.pk})

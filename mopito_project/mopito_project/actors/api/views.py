@@ -1,12 +1,16 @@
 from django.shortcuts import render
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.parsers import FormParser, MultiPartParser, JSONParser
+from rest_framework.permissions import AllowAny
+from rest_framework.decorators import action, permission_classes
 from rest_framework.response import Response
 from rest_framework import filters, mixins, status
 
 from mopito_project.core.api.views import BaseModelViewSet
 from mopito_project.actors.models import Clinics,  Patients, Staffs, Subscriptions, TimeSlots
-from mopito_project.actors.api.serializers import ClinicDetailSerializer, ClinicSerializer, PatientDetailSerializer, PatientSerializer, StaffDetailSerializer, StaffSerializer, SubscriptionDetailSerializer, SubscriptionSerializer, TimeSlotDetailSerializer, TimeSlotSerializer
+from actors.api.serializers import ClinicDetailSerializer, ClinicSerializer, PatientDetailSerializer, PatientSerializer, StaffDetailSerializer, StaffSerializer, SubscriptionDetailSerializer, SubscriptionSerializer, TimeSlotDetailSerializer, TimeSlotSerializer
+from mopito_project.users.api.serializers import CompleteProfileSerializer, CreateProfileSerializer, ProfileSerializer
+from mopito_project.users.models import Profile, User
 
 
 class PatientViewSet(BaseModelViewSet, mixins.ListModelMixin,
@@ -137,6 +141,59 @@ class ClinicViewSet(BaseModelViewSet, mixins.ListModelMixin,
         if self.action == "list" or self.action == "retrieve":
             return ClinicDetailSerializer
         return ClinicSerializer
+
+class ProfileViewSet(
+        BaseModelViewSet, 
+        mixins.ListModelMixin,
+        mixins.RetrieveModelMixin,
+        mixins.UpdateModelMixin,
+        mixins.CreateModelMixin,):
+    queryset = Profile.objects.filter(is_active=True)
+    serializer_class = ProfileSerializer
+    filter_backends = [
+        DjangoFilterBackend,
+        filters.SearchFilter,
+        filters.OrderingFilter,
+    ]
+    filterset_fields = ["first_name", "last_name", "phone_number", "is_active"]
+    search_fields = ["first_name", "last_name", "phone_number"]
+    ordering_fields = ["updated_at", "created_at"]
+    ordering = ["-updated_at", "-created_at"]
+    permission_classes = [AllowAny]
+
+    def get_serializer_class(self):
+        if self.action == "create":
+            return CreateProfileSerializer
+        if self.action == "complete_profile":
+            return CompleteProfileSerializer
+        return ProfileSerializer
+
+    @action(detail=False, methods=["post"])
+    # @permission_classes([AllowAny])
+    def complete_profile(self, request, *args, **kwargs):
+        serializer = CompleteProfileSerializer(data=request.data)
+        user = self.request.user
+        if not serializer.is_valid():
+            return Response(status=status.HTTP_400_BAD_REQUEST, data=serializer.errors)
+        
+        # phone_number = serializer.validated_data.get("phone_number")
+        height = serializer.validated_data.get("height")
+        weight = serializer.validated_data.get("weight")
+
+        patient = Patients.objects.create(height=height, weight=weight)
+        # user = User.objects.get(profile__phone_number=phone_number)
+        profile = user.profile
+        
+        profile.gender = serializer.validated_data.get("gender")
+        profile.dob = serializer.validated_data.get("dob")
+        profile.save()
+
+        user = User.objects.get(profile=profile)
+        user.email = serializer.validated_data.get("email")
+        user.patient = patient
+        user.save()
+
+        return Response(serializer.data)
 
 
 """

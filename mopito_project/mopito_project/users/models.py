@@ -13,6 +13,7 @@ from model_utils.models import TimeStampedModel
 
 from mopito_project.core.models import BaseModel, BaseModelUser
 from mopito_project.actors.models import Patients, Staffs
+from mopito_project.utils.sendsms import codeGenerator
 # Staffs
 
 
@@ -195,7 +196,8 @@ class OTP(TimeStampedModel):
 
     def save(self, *args, **kwargs):
         if not self.otp:
-            self.otp = str(random.randint(10000, 99999))
+            # self.otp = str(random.randint(10000, 99999))
+            self.otp = codeGenerator()
         # super().save(*args, **kwargs)
         self.created = datetime.now()
         super(TimeStampedModel, self).save(*args, **kwargs)

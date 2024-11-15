@@ -1,10 +1,13 @@
 import requests
+import random
+import string
+
 
 from config.settings.base import SMS_API_PASSWORD, SMS_API_URL, SMS_API_USER_ID
 
 def send_otp(phone_number, otp, sender_name="Mopital"):
     
-    message = f"Votre code de vérification est {otp}"
+    message = f"Votre code de vérification est {otp}\n\n Your verification code is {otp}"
     url = SMS_API_URL
 
     payload = {
@@ -26,3 +29,11 @@ def send_otp(phone_number, otp, sender_name="Mopital"):
     else:
         # return response.raise_for_status()
         print(response.raise_for_status())
+
+
+def codeGenerator(chars=string.ascii_uppercase + string.digits, N=5):
+    """
+    otp code generator
+    """
+    
+    return ''.join(random.choice(chars) for _ in range(N))

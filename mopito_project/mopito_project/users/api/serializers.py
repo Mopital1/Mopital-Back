@@ -120,21 +120,19 @@ class CompleteProfileSerializer(BaseSerializer):
     class Meta:
         model = Profile
         fields = (
-            "phone_number",
             "email",
             "height", 
             "weight",
-            "first_name",
-            "last_name",
             "dob",
             "gender"
         )
-    def validate(self, data):
-        # Ajoutez ici des validations supplémentaires si nécessaire
-        phone_number = data.get("phone_number")
-        if not Profile.objects.filter(phone_number=phone_number).exists():
-            raise serializers.ValidationError("Profile with this phone number does not exist.")
-        return data
+
+    # def validate(self, data):
+    #     # Ajoutez ici des validations supplémentaires si nécessaire
+    #     phone_number = data.get("phone_number")
+    #     if not Profile.objects.filter(phone_number=phone_number).exists():
+    #         raise serializers.ValidationError("Profile with this phone number does not exist.")
+    #     return data
 
 
 
@@ -292,7 +290,7 @@ class TokenObtainLifetimeSerializer(TokenObtainPairSerializer):
 
     def validate(self, attrs):
         data = super().validate(attrs)
-        username = self.user.email
+        # username = self.user.email
         refresh = self.get_token(self.user)
         data['lifetime'] = int(refresh.access_token.lifetime.total_seconds())
         return data
