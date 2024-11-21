@@ -1,7 +1,7 @@
 
 from mopito_project.core.api.serializers import BaseSerializer
 from mopito_project.actors.models import Clinics, Patients, Staffs, Subscriptions, TimeSlots
-from mopito_project.users.models import User
+from mopito_project.users.models import Profile, User
 from mopito_project.users.api.serializers import ProfileSerializer, UserSerializer
 
 
@@ -32,9 +32,20 @@ class UserProfileSerializer(BaseSerializer):
             "updated_at",
             )
         # extra_kwargs = {"password": {"write_only": True}}
+# class PatientChildSerializer(BaseSerializer):
+#     class Meta:
+#         model = Profile
+#         fields = (
+#             "id",
+#             ""
+#             "created_at",
+#             "updated_at",
+#         )
+#         read_only_fields = ("id", "created_at", "updated_at",)
 
 class PatientDetailSerializer(BaseSerializer):
     user = UserProfileSerializer()
+    children = PatientSerializer(many=True)
     class Meta:
         model = Patients
         fields = (
@@ -42,6 +53,7 @@ class PatientDetailSerializer(BaseSerializer):
             "height",
             "weight",
             "user",
+
             "created_at",
             "updated_at",
         )

@@ -23,6 +23,7 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer, Toke
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from mopito_project.core.api.serializers import BaseSerializer
+from mopito_project.utils.sendsms import send_otp
 from mopito_project.utils import randomize_digit_char
 from mopito_project.users.models import OTP, Profile, User
 
@@ -107,10 +108,17 @@ class CreateProfileSerializer(BaseSerializer):
     def create(self, validated_data):
         user_typ = validated_data.pop("user_typ", "PATIENT")
         profile = Profile.objects.create(**validated_data)
+        # generate random email for user 
+        email = f"{profile.phone_number}@mopital.com"
         user = User.objects.create(
             profile_id=profile.id,
             user_typ=user_typ,
+            email=email,
         )
+        # send otp to user
+        otp_instance = OTP.objects.create(user=user)
+        otp_code = str(otp_instance.otp)
+        send_otp(profile.phone_number, otp_code)
         return profile
 
 class CompleteProfileSerializer(BaseSerializer):

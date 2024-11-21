@@ -7,8 +7,37 @@ from mopito_project.core.models import BaseModel
 
 
 class Patients(BaseModel):
+    # patient blood group enum
+    blood_group = (
+        ("AB", "AB"),
+        ("A", "A"),
+        ("B", "B"),
+        ("O", "O"),)
+    # patient rhesus factor enum
+    rhesus_factor = (
+        ("POSITIVE", "POSITIVE"),
+        ("NEGATIVE", "NEGATIVE"),)
+    patient_hemoglobin = (
+        ("AA", "AA"),
+        ("AS", "AS"),
+        ("SS", "SS"))
     height = models.FloatField(_("height"), null=True, blank=True)
     weight = models.FloatField(_("weight"), null=True, blank=True)
+    sangain_group = models.CharField(_("sangain_group"), 
+                                     max_length=10, 
+                                     null=True, 
+                                     blank=True,
+                                     choices=blood_group)
+    rhesus_factor = models.CharField(_("rhesus_factor"),
+                                        max_length=10,
+                                        null=True,
+                                        blank=True,
+                                        choices=rhesus_factor,)
+    hemoglobin = models.CharField(_("hemoglobin"),
+                                    max_length=10,
+                                    null=True,
+                                    blank=True,
+                                    choices=patient_hemoglobin)
     patient_parent = models.ForeignKey(
         "self",
         on_delete=models.CASCADE,
@@ -16,6 +45,7 @@ class Patients(BaseModel):
         blank=True,
         related_name="children",
     )
+
     class Meta:
         """
         the place to configure de class or entities
@@ -27,10 +57,20 @@ class Patients(BaseModel):
     # def __str__(self):
     #     return f"{self.first_name} {self.last_name}"
     
+class Speciality(BaseModel):
+    name = models.CharField(_("name"), max_length=200)
+    description = models.TextField(_("description"))
+
+    
 class Staffs(BaseModel):
     staff_type = (
     ("NURSE", "NURSE"), ("GENERALIST", "GENERALIST"), ("SPECIALIST", "SPECIALIST"), ("CASHIER", "CASHIER"))
-    type = models.CharField(_("type"), max_length=10, choices=staff_type, default="NURSE")
+    type = models.CharField(_("type"), max_length=10, choices=staff_type, default="SPECIALIST")
+    speciality = models.ForeignKey(Speciality, 
+                                   on_delete=models.CASCADE, 
+                                   related_name="staffs",
+                                   null=True)
+
 
     class Meta:
         """
@@ -39,6 +79,7 @@ class Staffs(BaseModel):
         verbose_name = _("Staff")
         verbose_name_plural = _("Staffs")
         ordering = ("-created_at",)
+
 
 class TimeSlots(BaseModel):
     start_time = models.DateTimeField(_("start_time"))

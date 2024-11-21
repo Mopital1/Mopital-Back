@@ -37,3 +37,9 @@ def codeGenerator(chars=string.ascii_uppercase + string.digits, N=5):
     """
     
     return ''.join(random.choice(chars) for _ in range(N))
+
+def phoneNumberGenerator(chars=string.digits, N=8):
+    """
+    fake phone number generator
+    """
+    return '6'.join(random.choice(chars) for _ in range(N))
