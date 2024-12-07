@@ -8,13 +8,13 @@ from mopito_project.core.models import BaseModel
 
 class Patients(BaseModel):
     # patient blood group enum
-    blood_group = (
+    bld_group = (
         ("AB", "AB"),
         ("A", "A"),
         ("B", "B"),
         ("O", "O"),)
     # patient rhesus factor enum
-    rhesus_factor = (
+    rh_factor = (
         ("POSITIVE", "POSITIVE"),
         ("NEGATIVE", "NEGATIVE"),)
     patient_hemoglobin = (
@@ -23,16 +23,16 @@ class Patients(BaseModel):
         ("SS", "SS"))
     height = models.FloatField(_("height"), null=True, blank=True)
     weight = models.FloatField(_("weight"), null=True, blank=True)
-    sangain_group = models.CharField(_("sangain_group"), 
+    blood_group = models.CharField(_("blood_group"), 
                                      max_length=10, 
                                      null=True, 
                                      blank=True,
-                                     choices=blood_group)
+                                     choices=bld_group)
     rhesus_factor = models.CharField(_("rhesus_factor"),
                                         max_length=10,
                                         null=True,
                                         blank=True,
-                                        choices=rhesus_factor,)
+                                        choices=rh_factor,)
     hemoglobin = models.CharField(_("hemoglobin"),
                                     max_length=10,
                                     null=True,

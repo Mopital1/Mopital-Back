@@ -224,6 +224,20 @@ class CreateUserSerializer(BaseSerializer):
         validated_data.pop('password', None)
         return super().update(instance, validated_data)
 
+class UpdateUserSerializer(BaseSerializer):
+    class Meta:
+        model = User
+        fields = (
+            "id",
+            "is_active",
+            "email",
+            "user_typ",
+            "password",
+            "groups",
+            "user_permissions",
+            # "visibility_groups",
+        )
+        extra_kwargs = {"password": {"write_only": True}}
 
 class UserDetailSerializer(BaseSerializer):
     groups = GroupDetailSerializer(many=True)
@@ -237,6 +251,8 @@ class UserDetailSerializer(BaseSerializer):
             "is_active",
             "email",
             "user_typ",
+            "patient",
+            "staff",
             "password",
             "user_permissions",
             "groups",

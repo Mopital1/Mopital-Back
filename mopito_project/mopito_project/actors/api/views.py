@@ -1,14 +1,17 @@
 from django.shortcuts import render
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.parsers import FormParser, MultiPartParser, JSONParser
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.decorators import action, permission_classes
 from rest_framework.response import Response
 from rest_framework import filters, mixins, status
+from django.db import transaction
 
 from mopito_project.core.api.views import BaseModelViewSet
 from mopito_project.actors.models import Clinics,  Patients, Staffs, Subscriptions, TimeSlots
-from actors.api.serializers import ClinicDetailSerializer, ClinicSerializer, PatientDetailSerializer, PatientSerializer, StaffDetailSerializer, StaffSerializer, SubscriptionDetailSerializer, SubscriptionSerializer, TimeSlotDetailSerializer, TimeSlotSerializer
+from actors.api.serializers import ClinicDetailSerializer, ClinicSerializer, NearPatientSerializer, PatientDetailSerializer, PatientSerializer, StaffDetailSerializer, StaffSerializer, SubscriptionDetailSerializer, SubscriptionSerializer, TimeSlotDetailSerializer, TimeSlotSerializer, UpdatePatientSerializer
+
+from mopito_project.utils.sendsms import phoneNumberGenerator
 from mopito_project.users.api.serializers import CompleteProfileSerializer, CreateProfileSerializer, ProfileSerializer
 from mopito_project.users.models import Profile, User
 
@@ -19,6 +22,7 @@ class PatientViewSet(BaseModelViewSet, mixins.ListModelMixin,
                              mixins.CreateModelMixin,):
     queryset = Patients.objects.filter(is_active=True)
     serializer_class = PatientSerializer
+    permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = {
         "user__profile_id": ['exact'],
@@ -36,7 +40,53 @@ class PatientViewSet(BaseModelViewSet, mixins.ListModelMixin,
     def get_serializer_class(self):
         if self.action == "list" or self.action == "retrieve":
             return PatientDetailSerializer
+        if self.action == "update" or self.action == "partial_update":
+            return UpdatePatientSerializer
+        if self.action == "add_near_patient":
+            return NearPatientSerializer
         return PatientSerializer
+    
+    @action(detail=False, methods=["post"])
+    def add_near_patient(self, request, *args, **kwargs):
+        serializer = NearPatientSerializer(data=request.data)
+        user = self.request.user
+        if not serializer.is_valid():
+            return Response(status=status.HTTP_400_BAD_REQUEST, data=serializer.errors)
+        email = serializer.validated_data.get("email")
+        gender = serializer.validated_data.get("gender")
+        height = serializer.validated_data.get("height")
+        weight = serializer.validated_data.get("weight")
+        phone_number = phoneNumberGenerator()
+        if email is None:
+            email = f"{phone_number}@mopito.com"
+        username = email.split("@")[0]
+        print("user", user)
+        print("user patient", user.patient)
+        if user.patient is None:
+            return Response({"error": "You are not a patient"}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            with transaction.atomic():
+                profile = Profile.objects.create(
+                    username=username,
+                    phone_number=phone_number,
+                    gender=gender
+                )
+                new_user = User.objects.create(
+                    profile_id=profile.id,
+                    email=email,
+                    user_typ="PATIENT"
+                )
+                patient = Patients.objects.create(
+                    patient_parent_id=user.patient.id,
+                    height=height,
+                    weight=weight,
+                )
+                return Response({
+                    "profile": profile.id,
+                    "patient": patient.id
+                }, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 class StaffViewSet(BaseModelViewSet, mixins.ListModelMixin,
                              mixins.RetrieveModelMixin,

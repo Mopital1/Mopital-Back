@@ -7,7 +7,7 @@ from django.db import transaction
 
 
 from mopito_project.actors.models import Patients
-from mopito_project.utils.sendsms import phoneNumberGenerator
+from mopito_project.utils.sendsms import phoneNumberGenerator, send_appoint_notification
 from mopito_project.users.models import Profile, User
 
 class AppointmentSerializer(BaseSerializer):
@@ -38,7 +38,7 @@ class AppointmentSerializer(BaseSerializer):
         child_last_name = validated_data.pop("child_last_name", None)
         try:
             with transaction.atomic():
-                if validated_data.get("patient") is None:
+                if child_last_name is not None:
                     # creer le patient fils du patient courant
                     phone_number = phoneNumberGenerator()
                     profile = Profile.objects.create(first_name=child_first_name, 
@@ -47,13 +47,18 @@ class AppointmentSerializer(BaseSerializer):
                                                     )
                     patient = Patients.objects.create(patient_parent=user.patient)
                     email = f"{profile.phone_number}@mopital.com"
-                    user = User.objects.create(profile_id=profile.id,
+                    new_user = User.objects.create(profile_id=profile.id,
                                             patient_id=patient.id,
                                             user_typ="PATIENT",
                                             email=email)
                     validated_data["patient"] = patient
                 
                 appointment = Appointment.objects.create(**validated_data)
+                # envoyer une notification au staff
+                staff_phone_number = appointment.staff.user.profile.phone_number
+                send_appoint_notification(appointment,'sms/staff_appoint_notification.txt', staff_phone_number)
+                # envoyer une notification au patient
+                send_appoint_notification(appointment,'sms/patient_appoint_confirmation.txt', user.profile.phone_number)
                 return appointment
         except Exception as e:
             raise serializers.ValidationError(f"Erreur lors de la création du rendez-vous : {e}")

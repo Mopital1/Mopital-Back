@@ -1,0 +1,13 @@
+Bonjour {{staff_profile.first_name}},
+
+Le patient {{appointment.patient_profile.first_name}} a demandé un rendez-vous pour le {{appointment.date}} à {{appointment.time}}.
+
+Merci.
+
+---
+
+Hello {{staff_profile.first_name}},
+
+The patient {{appointment.patient_profile.first_name}} has requested an appointment for {{appointment.date}} at {{appointment.time}}.
+
+Thank you.
