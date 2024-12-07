@@ -64,7 +64,7 @@ class NearPatientSerializer(BaseSerializer):
             "weight",
             "email",
             "gender",
-            "patient_parent",
+            # "patient_parent",
             "created_at",
             "updated_at",
         )

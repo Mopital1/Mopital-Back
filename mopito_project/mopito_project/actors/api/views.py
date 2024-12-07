@@ -25,6 +25,7 @@ class PatientViewSet(BaseModelViewSet, mixins.ListModelMixin,
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = {
+        "user__id": ['exact'],
         "user__profile_id": ['exact'],
         "user__profile__first_name": ['exact', 'contains'],
         "user__profile__phone_number": ['exact', 'contains'],
