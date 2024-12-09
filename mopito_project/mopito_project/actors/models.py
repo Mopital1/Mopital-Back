@@ -21,6 +21,14 @@ class Patients(BaseModel):
         ("AA", "AA"),
         ("AS", "AS"),
         ("SS", "SS"))
+    relation_typ = (
+        ("CHILD", "CHILD"),
+        ("PARENT", "PARENT"),
+        ("BROTHER/SISTER", "BROTHER/SISTER"),
+        ("GRANDPARENT", "GRANDPARENT"),
+        ("OTHER", "OTHER"),
+    )
+
     height = models.FloatField(_("height"), null=True, blank=True)
     weight = models.FloatField(_("weight"), null=True, blank=True)
     blood_group = models.CharField(_("blood_group"), 
@@ -45,6 +53,11 @@ class Patients(BaseModel):
         blank=True,
         related_name="children",
     )
+    parent_relation_typ = models.CharField(_("parent_relation_typ"),
+                                            max_length=30,
+                                            choices=relation_typ,
+                                            null=True,
+                                            blank=True)
 
     class Meta:
         """
@@ -117,6 +130,17 @@ class Subscriptions(BaseModel):
         verbose_name_plural = _("Subscriptions")
         ordering = ("-created_at",)
 
+class Countries(BaseModel):
+    name = models.CharField(_("name"), max_length=200)
+    code = models.CharField(_("code"), max_length=10)
+
+    class Meta:
+        """
+        the place to configure de class or entities
+        """
+        verbose_name = _("Country")
+        verbose_name_plural = _("Countries")
+        ordering = ("-created_at",)
 
 class Clinics(BaseModel):
     name = models.CharField(_("name"), max_length=200)

@@ -1,6 +1,6 @@
 
 from mopito_project.core.api.serializers import BaseSerializer
-from mopito_project.actors.models import Clinics, Patients, Staffs, Subscriptions, TimeSlots
+from mopito_project.actors.models import Clinics, Countries, Patients, Speciality, Staffs, Subscriptions, TimeSlots
 from mopito_project.users.models import Profile, User
 from mopito_project.users.api.serializers import ProfileSerializer, UserSerializer
 from rest_framework import serializers
@@ -16,6 +16,7 @@ class PatientSerializer(BaseSerializer):
             "rhesus_factor",
             "hemoglobin",
             "patient_parent",
+            "parent_relation_typ",
             # "children",
             "created_at",
             "updated_at",
@@ -36,6 +37,7 @@ class UpdatePatientSerializer(BaseSerializer):
             "hemoglobin",
             "gender",
             "patient_parent",
+            "parent_relation_typ",
             "created_at",
             "updated_at",
         )
@@ -48,6 +50,7 @@ class UpdatePatientSerializer(BaseSerializer):
         instance.rhesus_factor = validated_data.get("rhesus_factor", instance.rhesus_factor)
         instance.hemoglobin = validated_data.get("hemoglobin", instance.hemoglobin)
         instance.patient_parent = validated_data.get("patient_parent", instance.patient_parent)
+        instance.parent_relation_typ = validated_data.get("parent_relation_typ", instance.parent_relation_typ)
         instance.user.profile.gender = validated_data.get("gender", instance.user.profile.gender)
 
         instance.save()
@@ -56,14 +59,19 @@ class UpdatePatientSerializer(BaseSerializer):
 class NearPatientSerializer(BaseSerializer):
     email = serializers.EmailField()
     gender = serializers.CharField()
+    first_name = serializers.CharField()
+    last_name = serializers.CharField()
     class Meta:
         model = Patients
         fields = (
             "id",
+            "first_name",
+            "last_name",
             "height",
             "weight",
             "email",
             "gender",
+            "pateint_relation_typ",
             # "patient_parent",
             "created_at",
             "updated_at",
@@ -77,8 +85,21 @@ class NearPatientSerializer(BaseSerializer):
             raise serializers.ValidationError("Height and weight must be greater than 0")
         return data
 
+class CountrySerializer(BaseSerializer):
+    class Meta:
+        model = Countries
+        fields = (
+            "id",
+            "name",
+            "code",
+            "created_at",
+            "updated_at",
+        )
+        read_only_fields = ("id", "created_at", "updated_at",)
+
 class UserProfileSerializer(BaseSerializer):
     profile = ProfileSerializer()
+    country = CountrySerializer(source="user.profile.country", read_only=True)
     class Meta:
         model = User
         fields = (
@@ -86,6 +107,7 @@ class UserProfileSerializer(BaseSerializer):
             "is_active", 
             #"email", 
             "user_typ",
+            "country",
             "profile",
             "created_at",
             "updated_at",
@@ -115,6 +137,7 @@ class PatientDetailSerializer(BaseSerializer):
             "rhesus_factor",
             "blood_group",
             "hemoglobin",
+            "parent_relation_typ",
             "patient_parent",
             "children",
             # "user",
@@ -222,6 +245,18 @@ class ClinicSerializer(BaseSerializer):
             "email",
             "start_time",
             "end_time",
+            "created_at",
+            "updated_at",
+        )
+        read_only_fields = ("id", "created_at", "updated_at",)
+
+class SpecialitySerializer(BaseSerializer):
+    class Meta:
+        model = Speciality
+        fields = (
+            "id",
+            "name",
+            "description",
             "created_at",
             "updated_at",
         )

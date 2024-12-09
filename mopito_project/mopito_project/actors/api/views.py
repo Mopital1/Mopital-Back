@@ -8,9 +8,10 @@ from rest_framework import filters, mixins, status
 from django.db import transaction
 
 from mopito_project.core.api.views import BaseModelViewSet
-from mopito_project.actors.models import Clinics,  Patients, Staffs, Subscriptions, TimeSlots
-from actors.api.serializers import ClinicDetailSerializer, ClinicSerializer, NearPatientSerializer, PatientDetailSerializer, PatientSerializer, StaffDetailSerializer, StaffSerializer, SubscriptionDetailSerializer, SubscriptionSerializer, TimeSlotDetailSerializer, TimeSlotSerializer, UpdatePatientSerializer
+from mopito_project.actors.models import Clinics, Countries,  Patients, Speciality, Staffs, Subscriptions, TimeSlots
+from actors.api.serializers import ClinicDetailSerializer, ClinicSerializer, CountrySerializer,  NearPatientSerializer, PatientDetailSerializer, PatientSerializer, SpecialitySerializer, StaffDetailSerializer, StaffSerializer, SubscriptionDetailSerializer, SubscriptionSerializer, TimeSlotDetailSerializer, TimeSlotSerializer, UpdatePatientSerializer
 
+from mopito_project.utils.functionUtils import get_user_email, remove_special_characters
 from mopito_project.utils.sendsms import phoneNumberGenerator
 from mopito_project.users.api.serializers import CompleteProfileSerializer, CreateProfileSerializer, ProfileSerializer
 from mopito_project.users.models import Profile, User
@@ -30,6 +31,7 @@ class PatientViewSet(BaseModelViewSet, mixins.ListModelMixin,
         "user__profile__first_name": ['exact', 'contains'],
         "user__profile__phone_number": ['exact', 'contains'],
         "patient_parent_id": ['exact'],
+        "parent_relation_typ": ['exact'],
         "updated_at": ['gte', 'lte', 'exact', 'gt', 'lt'],
         "created_at": ['gte', 'lte', 'exact', 'gt', 'lt']
     }
@@ -57,10 +59,13 @@ class PatientViewSet(BaseModelViewSet, mixins.ListModelMixin,
         gender = serializer.validated_data.get("gender")
         height = serializer.validated_data.get("height")
         weight = serializer.validated_data.get("weight")
+        parent_relation_typ = serializer.validated_data("parent_relation_typ")
+        first_name = remove_special_characters(serializer.validated_data.get("first_name")) 
+        last_name = remove_special_characters(serializer.validated_data.get("last_name"))
         phone_number = phoneNumberGenerator()
-        if email is None:
-            email = f"{phone_number}@mopito.com"
-        username = email.split("@")[0]
+        # if email is None:
+        #     email = f"{phone_number}@mopito.com"
+        # username = email.split("@")[0]
         print("user", user)
         print("user patient", user.patient)
         if user.patient is None:
@@ -68,26 +73,37 @@ class PatientViewSet(BaseModelViewSet, mixins.ListModelMixin,
         try:
             with transaction.atomic():
                 profile = Profile.objects.create(
-                    username=username,
+                    # username=username,
+                    email=email,
+                    first_name=first_name,
+                    last_name=last_name,
                     phone_number=phone_number,
                     gender=gender
                 )
                 new_user = User.objects.create(
                     profile_id=profile.id,
-                    email=email,
+                    email=get_user_email(first_name, last_name),
                     user_typ="PATIENT"
                 )
                 patient = Patients.objects.create(
                     patient_parent_id=user.patient.id,
+                    parent_relation_typ=parent_relation_typ,
                     height=height,
                     weight=weight,
                 )
                 return Response({
-                    "profile": profile.id,
-                    "patient": patient.id
+                    "profile": profile,
+                    "patient": patient
                 }, status=status.HTTP_201_CREATED)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+class SpecialityViewSet(BaseModelViewSet, mixins.ListModelMixin,
+                        mixins.RetrieveModelMixin,
+                        mixins.UpdateModelMixin,
+                        mixins.CreateModelMixin):
+    queryset = Speciality.objects.filter(is_active=True)
+    serializer_class = SpecialitySerializer
 
 class StaffViewSet(BaseModelViewSet, mixins.ListModelMixin,
                              mixins.RetrieveModelMixin,
@@ -165,6 +181,28 @@ class SubscriptionViewSet(BaseModelViewSet, mixins.ListModelMixin,
             return SubscriptionDetailSerializer
         return SubscriptionSerializer
 
+class CountryViewSet(BaseModelViewSet, mixins.ListModelMixin,
+                                mixins.RetrieveModelMixin,
+                                mixins.UpdateModelMixin,
+                                mixins.CreateModelMixin,):
+        queryset = Countries.objects.filter(is_active=True)
+        serializer_class = CountrySerializer
+        filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+        filterset_fields = {
+            "name": ['exact', 'contains'],
+            "code": ['exact', 'contains'],
+            "updated_at": ['gte', 'lte', 'exact', 'gt', 'lt'],
+            "created_at": ['gte', 'lte', 'exact', 'gt', 'lt']
+        }
+        search_fields = ["name", "iso_code", "phone_code"]
+        ordering_fields = ["updated_at", "created_at", "name"]
+        ordering = ["-updated_at", "-created_at"]
+    
+        # def get_serializer_class(self):
+        #     if self.action == "list" or self.action == "retrieve":
+        #         return CountryDetailSerializer
+        #     return CountrySerializer
+
 class ClinicViewSet(BaseModelViewSet, mixins.ListModelMixin,
                              mixins.RetrieveModelMixin,
                              mixins.UpdateModelMixin,
@@ -237,6 +275,10 @@ class ProfileViewSet(
         
         profile.gender = serializer.validated_data.get("gender")
         profile.dob = serializer.validated_data.get("dob")
+        profile.email = serializer.validated_data.get("email")
+        profile.country = serializer.validated_data.get("country")
+        profile.city = serializer.validated_data.get("city")
+        profile.quarter = serializer.validated_data.get("quarter")
         profile.save()
 
         user = User.objects.get(profile=profile)

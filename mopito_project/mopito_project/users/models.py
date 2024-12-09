@@ -12,7 +12,7 @@ from django.utils.translation import gettext_lazy as _
 from model_utils.models import TimeStampedModel
 
 from mopito_project.core.models import BaseModel, BaseModelUser
-from mopito_project.actors.models import Patients, Staffs
+from mopito_project.actors.models import Countries, Patients, Staffs
 from mopito_project.utils.sendsms import codeGenerator
 # Staffs
 
@@ -123,11 +123,17 @@ class Profile(BaseModel):
         blank=True,
         error_messages={"unique": _("A user with that phone number already exists.")},
         )
-    username = models.CharField(
-        _("username"),
+    # username = models.CharField(
+    #     _("username"),
+    #     max_length=150,
+    #     unique=True,
+    #     error_messages={"unique": _("A user with that username already exists.")},
+    # )
+    email = models.CharField(
+        _("email"),
         max_length=150,
-        unique=True,
-        error_messages={"unique": _("A user with that username already exists.")},
+        null=True,
+        blank=True,
     )
     first_name = models.CharField(_("first_name"), max_length=50, null=True, blank=True)
     last_name = models.CharField(_("first_name"), max_length=50, null=True, blank=True)
@@ -137,6 +143,15 @@ class Profile(BaseModel):
     profile_picture_file = models.FileField(
         _("profile_picture_file"), null=True, blank=True, upload_to="profile_picture/%Y/%m/%D/"
     )
+    country = models.ForeignKey(
+        Countries,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="profiles",
+    )
+    city = models.CharField(_("city"), max_length=100, null=True, blank=True)
+    quarter = models.CharField(_("quarter"), max_length=100, null=True, blank=True)
 
 class User(AbstractUser, BaseModelUser):
     """

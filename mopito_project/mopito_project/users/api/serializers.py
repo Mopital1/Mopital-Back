@@ -23,6 +23,7 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer, Toke
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from mopito_project.core.api.serializers import BaseSerializer
+from mopito_project.utils.functionUtils import get_user_email
 from mopito_project.utils.sendsms import send_otp
 from mopito_project.utils import randomize_digit_char
 from mopito_project.users.models import OTP, Profile, User
@@ -99,17 +100,21 @@ class CreateProfileSerializer(BaseSerializer):
     class Meta:
         model = Profile
         fields = (
-            "phone_number",
-            "username",
-            "user_typ",
             "first_name",
-            "last_name")
+            "last_name",
+            "phone_number",
+            #"username",
+            "user_typ",
+            "gender",
+            "dob",
+            )
 
     def create(self, validated_data):
         user_typ = validated_data.pop("user_typ", "PATIENT")
         profile = Profile.objects.create(**validated_data)
         # generate random email for user 
-        email = f"{profile.phone_number}@mopital.com"
+        # email = f"{profile.phone_number}@mopital.com"
+        email = get_user_email(validated_data.get("first_name"), validated_data.get("last_name"))
         user = User.objects.create(
             profile_id=profile.id,
             user_typ=user_typ,
@@ -122,13 +127,16 @@ class CreateProfileSerializer(BaseSerializer):
         return profile
 
 class CompleteProfileSerializer(BaseSerializer):
-    email = serializers.EmailField(required=False, write_only=True)
+    # email = serializers.EmailField(required=False, write_only=True)
     height = serializers.FloatField(required=False, write_only=True)
     weight = serializers.FloatField(required=False, write_only=True)
     class Meta:
         model = Profile
         fields = (
             "email",
+            "country",
+            "city",
+            "quarter",
             "height", 
             "weight",
             "dob",
@@ -152,7 +160,8 @@ class ProfileSerializer(BaseSerializer):
         fields = (
             "id",
             "phone_number",
-            "username",
+            "email",
+            #"username",
             "user_typ",
             "first_name",
             "last_name",
@@ -160,10 +169,14 @@ class ProfileSerializer(BaseSerializer):
             "dob",
             "profile_picture_file",
             "code",
+            "country",
+            "city",
+            "quarter",
             "created_at", 
             "updated_at"
         )
     read_only_fields = ("id", "created_at", "updated_at",)
+
 
     def create(self, validated_data):
         """
