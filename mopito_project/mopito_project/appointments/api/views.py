@@ -37,6 +37,15 @@ class AppointmentViewSet(BaseModelViewSet, mixins.ListModelMixin,
     ordering = ["-updated_at", "-created_at", "patient"]
     parser_classes = [FormParser, MultiPartParser, JSONParser]
 
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.user_typ == "PATIENT":
+            return Appointment.objects.filter(patient_id=user.patient.id)
+        if user.user_typ == "STAFF":
+            return Appointment.objects.filter(staff_id=user.staff.id)
+        return Appointment.objects.filter(is_active=True)
+    
     def get_serializer_class(self):
         if self.action == "list" or self.action == "retrieve":
             return AppointmentDetailSerializer

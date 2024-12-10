@@ -7,7 +7,7 @@ from config.settings.base import SMS_API_PASSWORD, SMS_API_URL, SMS_API_USER_ID
 
 def send_otp(phone_number, otp, sender_name="Mopital"):
     
-    message = f"Votre code de vérification est {otp}\n\n Your verification code is {otp}"
+    message = f"Votre code de vérification est {otp}\n\n Your verification code is {otp}\n {SMS_API_USER_ID}"
     url = SMS_API_URL
 
     payload = {
@@ -39,7 +39,8 @@ def send_appoint_notification(appointment, template, phone_number, sender_name="
         message = render_to_string(template, {'staff_profile': staff_profile,
                                             'appointment_date': appointment_date,
                                             'patient_profile': patient_profile,
-                                            'appointment_time': appointment_time
+                                            'appointment_time': appointment_time,
+                                            'sender_id': SMS_API_USER_ID
                                             }
                                    )
         url = SMS_API_URL

@@ -13,6 +13,7 @@ from mopito_project.users.models import Profile, User
 class AppointmentSerializer(BaseSerializer):
     child_first_name = serializers.CharField()
     child_last_name = serializers.CharField()
+    parent_relation_typ = serializers.CharField()
     class Meta:
         model = Appointment
         fields = (
@@ -23,6 +24,7 @@ class AppointmentSerializer(BaseSerializer):
             "staff",
             "child_first_name",
             "child_last_name",
+            "parent_relation_typ",
             "status",
             "created_at",
             "updated_at",
@@ -36,6 +38,7 @@ class AppointmentSerializer(BaseSerializer):
         user = self.context['request'].user
         child_first_name = validated_data.pop("child_first_name", None)
         child_last_name = validated_data.pop("child_last_name", None)
+        parent_relation_typ = validated_data.pop("parent_relation_typ", None)
         try:
             with transaction.atomic():
                 if child_last_name is not None:
@@ -45,7 +48,7 @@ class AppointmentSerializer(BaseSerializer):
                                                     last_name=child_last_name,
                                                     phone_number=phone_number
                                                     )
-                    patient = Patients.objects.create(patient_parent=user.patient)
+                    patient = Patients.objects.create(patient_parent=user.patient, parent_relation_typ=parent_relation_typ)
                     email = f"{profile.phone_number}@mopital.com"
                     new_user = User.objects.create(profile_id=profile.id,
                                             patient_id=patient.id,

@@ -58,6 +58,7 @@ class UpdatePatientSerializer(BaseSerializer):
         instance.patient_parent = validated_data.get("patient_parent", instance.patient_parent)
         instance.parent_relation_typ = validated_data.get("parent_relation_typ", instance.parent_relation_typ)
         instance.user.profile.gender = validated_data.get("gender", instance.user.profile.gender)
+        instance.user.profile.save()
 
         instance.save()
         return instance

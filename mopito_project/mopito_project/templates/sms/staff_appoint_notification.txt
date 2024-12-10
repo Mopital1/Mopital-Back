@@ -11,3 +11,5 @@ Hello {{staff_profile.first_name}},
 The patient {{appointment.patient_profile.first_name}} has requested an appointment for {{appointment.date}} at {{appointment.time}}.
 
 Thank you.
+
+{{sender_id}}

@@ -36,7 +36,7 @@ class PatientViewSet(BaseModelViewSet, mixins.ListModelMixin,
         "created_at": ['gte', 'lte', 'exact', 'gt', 'lt']
     }
 
-    search_fields = ["user__profile__name", "user__profile__phone_number"]
+    search_fields = ["user__profile__last_name", "user__profile__first_name"]
     ordering_fields = ["updated_at", "created_at"]
     ordering = ["-updated_at", "-created_at"]
 
@@ -133,7 +133,7 @@ class StaffViewSet(BaseModelViewSet, mixins.ListModelMixin,
         "created_at": ['gte', 'lte', 'exact', 'gt', 'lt']
     }
 
-    search_fields = ["user__profile__name", "user__profile__phone_number"]
+    search_fields = ["user__profile__last_name", "user__profile__first_name"]
     ordering_fields = ["updated_at", "created_at"]
     ordering = ["-updated_at", "-created_at"]
 
