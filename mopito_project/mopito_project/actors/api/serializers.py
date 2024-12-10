@@ -6,10 +6,16 @@ from mopito_project.users.api.serializers import ProfileSerializer, UserSerializ
 from rest_framework import serializers
 
 class PatientSerializer(BaseSerializer):
+    first_name = serializers.CharField(source="user.profile.first_name")
+    last_name = serializers.CharField(source="user.profile.last_name")
+    email = serializers.EmailField(source="user.profile.email")
     class Meta:
         model = Patients
         fields = (
             "id",
+            "first_name",
+            "last_name",
+            "email",
             "height",
             "weight",
             "blood_group",
@@ -71,7 +77,7 @@ class NearPatientSerializer(BaseSerializer):
             "weight",
             "email",
             "gender",
-            "pateint_relation_typ",
+            "parent_relation_typ",
             # "patient_parent",
             "created_at",
             "updated_at",
@@ -99,7 +105,7 @@ class CountrySerializer(BaseSerializer):
 
 class UserProfileSerializer(BaseSerializer):
     profile = ProfileSerializer()
-    country = CountrySerializer(source="user.profile.country", read_only=True)
+    
     class Meta:
         model = User
         fields = (
@@ -107,7 +113,6 @@ class UserProfileSerializer(BaseSerializer):
             "is_active", 
             #"email", 
             "user_typ",
-            "country",
             "profile",
             "created_at",
             "updated_at",
@@ -125,22 +130,25 @@ class UserProfileSerializer(BaseSerializer):
 #         read_only_fields = ("id", "created_at", "updated_at",)
 
 class PatientDetailSerializer(BaseSerializer):
-    # user = UserProfileSerializer()
+    # profile = ProfileSerializer(source="user.profile")
+    user = UserProfileSerializer()
     children = serializers.SerializerMethodField(read_only=True)
-    patient_parent = UserProfileSerializer(source="patient_parent.user", read_only=True)
+    # children = UserProfileSerializer(many=True)
+    # patient_parent = UserProfileSerializer(source="patient_parent.user", read_only=True)
     class Meta:
         model = Patients
         fields = (
             "id",
+            # "profile",
             "height",
             "weight",
             "rhesus_factor",
             "blood_group",
             "hemoglobin",
             "parent_relation_typ",
-            "patient_parent",
+            # "patient_parent",
             "children",
-            # "user",
+            "user",
             "created_at",
             "updated_at",
         )

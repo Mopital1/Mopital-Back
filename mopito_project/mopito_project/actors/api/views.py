@@ -40,6 +40,13 @@ class PatientViewSet(BaseModelViewSet, mixins.ListModelMixin,
     ordering_fields = ["updated_at", "created_at"]
     ordering = ["-updated_at", "-created_at"]
 
+    def get_queryset(self):
+        user = self.request.user
+        if user.user_typ == "PATIENT":
+            # return Patients.objects.filter(id=user.patient.id)
+            return Patients.objects.filter(patient_parent_id=user.patient.id)
+        return Patients.objects.filter(is_active=True)
+
     def get_serializer_class(self):
         if self.action == "list" or self.action == "retrieve":
             return PatientDetailSerializer
@@ -48,6 +55,7 @@ class PatientViewSet(BaseModelViewSet, mixins.ListModelMixin,
         if self.action == "add_near_patient":
             return NearPatientSerializer
         return PatientSerializer
+    
     
     @action(detail=False, methods=["post"])
     def add_near_patient(self, request, *args, **kwargs):
@@ -59,7 +67,7 @@ class PatientViewSet(BaseModelViewSet, mixins.ListModelMixin,
         gender = serializer.validated_data.get("gender")
         height = serializer.validated_data.get("height")
         weight = serializer.validated_data.get("weight")
-        parent_relation_typ = serializer.validated_data("parent_relation_typ")
+        parent_relation_typ = serializer.validated_data.get("parent_relation_typ")
         first_name = remove_special_characters(serializer.validated_data.get("first_name")) 
         last_name = remove_special_characters(serializer.validated_data.get("last_name"))
         phone_number = phoneNumberGenerator()
@@ -80,20 +88,22 @@ class PatientViewSet(BaseModelViewSet, mixins.ListModelMixin,
                     phone_number=phone_number,
                     gender=gender
                 )
-                new_user = User.objects.create(
-                    profile_id=profile.id,
-                    email=get_user_email(first_name, last_name),
-                    user_typ="PATIENT"
-                )
                 patient = Patients.objects.create(
                     patient_parent_id=user.patient.id,
                     parent_relation_typ=parent_relation_typ,
                     height=height,
                     weight=weight,
                 )
+                
+                new_user = User.objects.create(
+                    patient_id=patient.id,
+                    profile_id=profile.id,
+                    email=get_user_email(first_name, last_name),
+                    user_typ="PATIENT"
+                )
                 return Response({
-                    "profile": profile,
-                    "patient": patient
+                    "profile": profile.id,
+                    "patient": patient.id
                 }, status=status.HTTP_201_CREATED)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)

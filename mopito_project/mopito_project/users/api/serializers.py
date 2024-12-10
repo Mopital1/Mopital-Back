@@ -27,6 +27,7 @@ from mopito_project.utils.functionUtils import get_user_email
 from mopito_project.utils.sendsms import send_otp
 from mopito_project.utils import randomize_digit_char
 from mopito_project.users.models import OTP, Profile, User
+from mopito_project.actors.models import Countries
 
 # from ..models import User, VisibilityGroup
 # from ...h_centers.api.serializers import HUniteSerializers
@@ -150,10 +151,22 @@ class CompleteProfileSerializer(BaseSerializer):
     #         raise serializers.ValidationError("Profile with this phone number does not exist.")
     #     return data
 
+class CountrySerializer(BaseSerializer):
+    class Meta:
+        model = Countries
+        fields = (
+            "id",
+            "name",
+            "code",
+            "created_at",
+            "updated_at",
+        )
+        read_only_fields = ("id", "created_at", "updated_at",)
 
 
 class ProfileSerializer(BaseSerializer):
     user_typ = serializers.CharField(required=False, write_only=True)
+    country = CountrySerializer(read_only=True)
     # email = serializers.EmailField(required=False, write_only=True)
     class Meta:
         model = Profile
