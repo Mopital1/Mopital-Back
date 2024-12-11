@@ -285,8 +285,8 @@ class ProfileViewSet(
         # user = User.objects.get(profile__phone_number=phone_number)
         profile = user.profile
         
-        profile.gender = serializer.validated_data.get("gender")
-        profile.dob = serializer.validated_data.get("dob")
+        # profile.gender = serializer.validated_data.get("gender", )
+        # profile.dob = serializer.validated_data.get("dob")
         profile.email = serializer.validated_data.get("email")
         profile.country = serializer.validated_data.get("country")
         profile.city = serializer.validated_data.get("city")

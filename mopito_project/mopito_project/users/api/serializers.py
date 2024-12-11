@@ -140,8 +140,8 @@ class CompleteProfileSerializer(BaseSerializer):
             "quarter",
             "height", 
             "weight",
-            "dob",
-            "gender"
+            # "dob",
+            # "gender"
         )
 
     # def validate(self, data):
