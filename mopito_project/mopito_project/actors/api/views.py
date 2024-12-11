@@ -67,6 +67,7 @@ class PatientViewSet(BaseModelViewSet, mixins.ListModelMixin,
         gender = serializer.validated_data.get("gender")
         height = serializer.validated_data.get("height")
         weight = serializer.validated_data.get("weight")
+        dob = serializer.validated_data.get("dob")
         parent_relation_typ = serializer.validated_data.get("parent_relation_typ")
         first_name = remove_special_characters(serializer.validated_data.get("first_name")) 
         last_name = remove_special_characters(serializer.validated_data.get("last_name"))
@@ -85,6 +86,7 @@ class PatientViewSet(BaseModelViewSet, mixins.ListModelMixin,
                     email=email,
                     first_name=first_name,
                     last_name=last_name,
+                    dob=dob,
                     phone_number=phone_number,
                     gender=gender
                 )

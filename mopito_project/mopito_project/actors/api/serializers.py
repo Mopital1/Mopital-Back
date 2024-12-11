@@ -68,12 +68,14 @@ class NearPatientSerializer(BaseSerializer):
     gender = serializers.CharField()
     first_name = serializers.CharField()
     last_name = serializers.CharField()
+    dob = serializers.DateField()
     class Meta:
         model = Patients
         fields = (
             "id",
             "first_name",
             "last_name",
+            "dob",
             "height",
             "weight",
             "email",
