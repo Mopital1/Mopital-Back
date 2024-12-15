@@ -76,6 +76,10 @@ class Speciality(BaseModel):
 
     
 class Staffs(BaseModel):
+    pro_title = (
+        ("Dr", "Dr"),
+        ("Pr", "Pr"),
+)
     staff_type = (
     ("NURSE", "NURSE"), ("GENERALIST", "GENERALIST"), ("SPECIALIST", "SPECIALIST"), ("CASHIER", "CASHIER"))
     type = models.CharField(_("type"), max_length=10, choices=staff_type, default="SPECIALIST")
@@ -83,6 +87,7 @@ class Staffs(BaseModel):
                                    on_delete=models.CASCADE, 
                                    related_name="staffs",
                                    null=True)
+    title = models.CharField(_("title"), max_length=10, choices=pro_title, default="Dr")
 
 
     class Meta:

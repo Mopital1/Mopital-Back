@@ -17,6 +17,7 @@ import logging
 from django.contrib.auth.models import Group, Permission
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
+from django.db import transaction
 
 # from hemodialyse.core.api.serializers import BaseSerializer
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer, TokenRefreshSerializer
@@ -27,6 +28,7 @@ from mopito_project.utils.functionUtils import get_user_email
 from mopito_project.utils.sendsms import send_otp
 from mopito_project.utils import randomize_digit_char
 from mopito_project.users.models import OTP, Profile, User
+from mopito_project.actors.models import Patients, Staffs, Speciality
 from mopito_project.actors.models import Countries
 
 # from ..models import User, VisibilityGroup
@@ -98,35 +100,73 @@ class GroupDetailSerializer(BaseSerializer):
 
 class CreateProfileSerializer(BaseSerializer):
     user_typ = serializers.CharField(required=False, write_only=True)
+    # staff_type = serializers.CharField(required=False, write_only=True)
+    # speciality id is only for staff, and is uuid
+    speciality_id = serializers.UUIDField(required=False, write_only=True)
+    
     class Meta:
         model = Profile
         fields = (
             "first_name",
             "last_name",
             "phone_number",
+            "profile_picture_file",
             #"username",
             "user_typ",
+            # "staff_type",
+            "speciality_id",
             "gender",
             "dob",
             )
+    
+    def validate(self, data):
+        if not data.get('phone_number'):
+            raise serializers.ValidationError("Phone number is required")
+            
+        if data.get("user_typ") == "STAFF":
+            # if not data.get("staff_type"):
+            #     raise serializers.ValidationError("Staff type is required for staff users")
+            if not data.get("speciality_id"):
+                raise serializers.ValidationError("Speciality is required for staff users")
+            if not Speciality.objects.filter(id=data.get("speciality_id")).exists():
+                raise serializers.ValidationError("Speciality does not exist")
+        
+        return data
 
+    @transaction.atomic
     def create(self, validated_data):
-        user_typ = validated_data.pop("user_typ", "PATIENT")
-        profile = Profile.objects.create(**validated_data)
-        # generate random email for user 
-        # email = f"{profile.phone_number}@mopital.com"
-        email = get_user_email(validated_data.get("first_name"), validated_data.get("last_name"))
-        user = User.objects.create(
-            profile_id=profile.id,
-            user_typ=user_typ,
-            email=email,
-        )
-        # send otp to user
-        otp_instance = OTP.objects.create(user=user)
-        otp_code = str(otp_instance.otp)
-        send_otp(profile.phone_number, otp_code)
-        return profile
+        try:
+            user_typ = validated_data.pop("user_typ", "PATIENT")
+            # staff_type = validated_data.pop("staff_type", "GENERALIST")
+            speciality_id = validated_data.pop("speciality_id", None)
+            
+            profile = Profile.objects.create(**validated_data)
+            email = get_user_email(validated_data.get("first_name"), validated_data.get("last_name"))
+            
+            user = User.objects.create(
+                profile_id=profile.id,
+                user_typ=user_typ,
+                email=email,
+            )
 
+            if user_typ == "PATIENT":
+                patient = Patients.objects.create(height=0, weight=0)
+                user.patient = patient
+                user.save()
+            elif user_typ == "STAFF":
+                staff = Staffs.objects.create(speciality_id=speciality_id)
+                user.staff = staff
+                user.save()
+
+            otp_instance = OTP.objects.create(user=user)
+            otp_code = str(otp_instance.otp)
+            send_otp(profile.phone_number, otp_code)
+            
+            return profile
+            
+        except Exception as e:
+            raise serializers.ValidationError(f"Error creating profile: {str(e)}")
+        
 class CompleteProfileSerializer(BaseSerializer):
     # email = serializers.EmailField(required=False, write_only=True)
     height = serializers.FloatField(required=False, write_only=True)

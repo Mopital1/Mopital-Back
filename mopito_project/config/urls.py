@@ -11,7 +11,7 @@ from drf_spectacular.views import SpectacularSwaggerView
 from rest_framework.authtoken.views import obtain_auth_token
 
 from mopito_project.users.api.views import ObtainPhoneOTPAuthToken, SendOTPView, TokenObtainPairView, TokenRefreshView
-
+from mopito_project.background_jobs.api.views import send_message_print, mark_missed_appoint
 urlpatterns = [
     path("", TemplateView.as_view(template_name="pages/home.html"), name="home"),
     path(
@@ -32,6 +32,9 @@ urlpatterns = [
 
 # API URLS
 urlpatterns += [
+    # background task
+    path("api/send_message", send_message_print, name='send_message_print'),
+    path("api/mark_missed_appoint", mark_missed_appoint, name='mark_missed_appoint'),
     # API base url
     path("api/", include("config.api_router")),
     path("api/", include("mopito_project.actors.urls")),

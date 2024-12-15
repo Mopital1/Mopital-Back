@@ -5,6 +5,23 @@ from mopito_project.users.models import Profile, User
 from mopito_project.users.api.serializers import ProfileSerializer, UserSerializer
 from rest_framework import serializers
 
+class CreatePatientSerializer(BaseSerializer):
+    class Meta:
+        model = Patients
+        fields = (
+            "id",
+            "height",
+            "weight",
+            "blood_group",
+            "rhesus_factor",
+            "hemoglobin",
+            "patient_parent",
+            "parent_relation_typ",
+            "created_at",
+            "updated_at",
+        )
+        read_only_fields = ("id", "created_at", "updated_at",)
+
 class PatientSerializer(BaseSerializer):
     first_name = serializers.CharField(source="user.profile.first_name")
     last_name = serializers.CharField(source="user.profile.last_name")
@@ -174,6 +191,7 @@ class StaffSerializer(BaseSerializer):
         fields = (
             "id",
             "type",
+            "title",
             "created_at",
             "updated_at"
         )
@@ -185,6 +203,7 @@ class StaffDetailSerializer(BaseSerializer):
         fields = (
             "id", 
             "type",
+            "title",
             "user",
             "created_at",
             "updated_at",

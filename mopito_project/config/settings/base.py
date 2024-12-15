@@ -91,6 +91,8 @@ THIRD_PARTY_APPS = [
     "rest_framework.authtoken",
     "corsheaders",
     "drf_spectacular",
+    "background_task",
+
 ]
 
 LOCAL_APPS = [
@@ -98,6 +100,7 @@ LOCAL_APPS = [
     "mopito_project.core",
     "mopito_project.actors",
     "mopito_project.appointments",
+    "mopito_project.background_jobs",
     # Your stuff: custom apps go here
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
@@ -257,6 +260,14 @@ MANAGERS = ADMINS
 # https://cookiecutter-django.readthedocs.io/en/latest/settings.html#other-environment-settings
 # Force the `admin` sign in process to go through the `django-allauth` workflow
 DJANGO_ADMIN_FORCE_ALLAUTH = env.bool("DJANGO_ADMIN_FORCE_ALLAUTH", default=False)
+
+
+# BACKGROUND_TASKS = {
+#     'send_otp_to_user':{
+#         'task': 'mopito_project.background_jobs.tasks.send_otp_to_user',
+#         'schedule': timedelta(seconds=5)
+#     }
+# }
 
 # LOGGING
 # ------------------------------------------------------------------------------

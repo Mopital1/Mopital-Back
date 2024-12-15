@@ -6,7 +6,7 @@ from rest_framework.decorators import action, permission_classes
 from rest_framework.response import Response
 from rest_framework import filters, mixins, status
 from django.db import transaction
-
+from rest_framework.parsers import FormParser, MultiPartParser, JSONParser  
 from mopito_project.core.api.views import BaseModelViewSet
 from mopito_project.actors.models import Clinics, Countries,  Patients, Speciality, Staffs, Subscriptions, TimeSlots
 from actors.api.serializers import ClinicDetailSerializer, ClinicSerializer, CountrySerializer,  NearPatientSerializer, PatientDetailSerializer, PatientSerializer, SpecialitySerializer, StaffDetailSerializer, StaffSerializer, SubscriptionDetailSerializer, SubscriptionSerializer, TimeSlotDetailSerializer, TimeSlotSerializer, UpdatePatientSerializer
@@ -15,7 +15,8 @@ from mopito_project.utils.functionUtils import get_user_email, remove_special_ch
 from mopito_project.utils.sendsms import phoneNumberGenerator
 from mopito_project.users.api.serializers import CompleteProfileSerializer, CreateProfileSerializer, ProfileSerializer
 from mopito_project.users.models import Profile, User
-
+from mopito_project.actors.api.serializers import CreatePatientSerializer
+from mopito_project.background_jobs.tasks import send_otp_to_user
 
 class PatientViewSet(BaseModelViewSet, mixins.ListModelMixin,
                              mixins.RetrieveModelMixin,
@@ -42,6 +43,7 @@ class PatientViewSet(BaseModelViewSet, mixins.ListModelMixin,
 
     def get_queryset(self):
         user = self.request.user
+        send_otp_to_user(repeat=86400)
         if user.user_typ == "PATIENT":
             # return Patients.objects.filter(id=user.patient.id)
             return Patients.objects.filter(patient_parent_id=user.patient.id)
@@ -50,6 +52,8 @@ class PatientViewSet(BaseModelViewSet, mixins.ListModelMixin,
     def get_serializer_class(self):
         if self.action == "list" or self.action == "retrieve":
             return PatientDetailSerializer
+        if self.action == "create":
+            return CreatePatientSerializer
         if self.action == "update" or self.action == "partial_update":
             return UpdatePatientSerializer
         if self.action == "add_near_patient":
@@ -135,7 +139,7 @@ class StaffViewSet(BaseModelViewSet, mixins.ListModelMixin,
         "created_at": ['gte', 'lte', 'exact', 'gt', 'lt']
     }
 
-    search_fields = ["user__profile__last_name", "user__profile__first_name"]
+    search_fields = ["user__profile__last_name", "user__profile__first_name", "user__profile__city", "speciality__name"]
     ordering_fields = ["updated_at", "created_at"]
     ordering = ["-updated_at", "-created_at"]
 
@@ -257,10 +261,11 @@ class ProfileViewSet(
         filters.OrderingFilter,
     ]
     filterset_fields = ["first_name", "last_name", "phone_number", "is_active"]
-    search_fields = ["first_name", "last_name", "phone_number"]
+    search_fields = ["first_name", "last_name"]
     ordering_fields = ["updated_at", "created_at"]
     ordering = ["-updated_at", "-created_at"]
     permission_classes = [AllowAny]
+    parser_classes = [FormParser, MultiPartParser, JSONParser]
 
     def get_serializer_class(self):
         if self.action == "create":
@@ -270,36 +275,43 @@ class ProfileViewSet(
         return ProfileSerializer
 
     @action(detail=False, methods=["post"])
-    # @permission_classes([AllowAny])
     def complete_profile(self, request, *args, **kwargs):
         serializer = CompleteProfileSerializer(data=request.data)
         user = self.request.user
+        
         if not serializer.is_valid():
             return Response(status=status.HTTP_400_BAD_REQUEST, data=serializer.errors)
         
-        # phone_number = serializer.validated_data.get("phone_number")
-        height = serializer.validated_data.get("height")
-        weight = serializer.validated_data.get("weight")
+        try:
+            with transaction.atomic():
+                patient = user.patient
+                profile = user.profile
+                
+                if not patient or not profile:
+                    return Response(
+                        {"error": "Patient or Profile not found"}, 
+                        status=status.HTTP_404_NOT_FOUND
+                    )
+                
+                # Update profile
+                profile.email = serializer.validated_data.get("email", None)
+                profile.country = serializer.validated_data.get("country", None)
+                profile.city = serializer.validated_data.get("city", None)
+                profile.quarter = serializer.validated_data.get("quarter", None)
+                profile.save()
 
-        patient = Patients.objects.create(height=height, weight=weight)
-        # user = User.objects.get(profile__phone_number=phone_number)
-        profile = user.profile
-        
-        # profile.gender = serializer.validated_data.get("gender", )
-        # profile.dob = serializer.validated_data.get("dob")
-        profile.email = serializer.validated_data.get("email")
-        profile.country = serializer.validated_data.get("country")
-        profile.city = serializer.validated_data.get("city")
-        profile.quarter = serializer.validated_data.get("quarter")
-        profile.save()
+                # Update patient
+                patient.height = serializer.validated_data.get("height", 0)
+                patient.weight = serializer.validated_data.get("weight", 0)
+                patient.save()
 
-        user = User.objects.get(profile=profile)
-        user.email = serializer.validated_data.get("email")
-        user.patient = patient
-        user.save()
-
-        return Response(serializer.data)
-
+            return Response(serializer.data)
+            
+        except Exception as e:
+            return Response(
+                {"error": str(e)}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )  
 
 """
 

@@ -11,6 +11,8 @@ class Appointment(BaseModel):
         ("PENDING", "PENDING"),
         ("CONFIRMED", "CONFIRMED"),
         ("CANCELLED", "CANCELLED"),
+        ("REPORTED", "REPORTED"),
+        ("MISSED", "MISSED"),
         ("COMPLETED", "COMPLETED"),
     )
     appointment_date = models.DateTimeField(_("appointment_date"), null=True, blank=True)
@@ -19,6 +21,7 @@ class Appointment(BaseModel):
     patient = models.ForeignKey(Patients, on_delete=models.CASCADE, related_name="appointments")
     staff = models.ForeignKey(Staffs, on_delete=models.CASCADE, related_name="appointments")
     status = models.CharField(_("status"), max_length=10, choices=appointment_status, default="PENDING")
+    patient_update_count = models.IntegerField(_("patient_update_count"), default=0)
 
     class Meta:
         """Meta definition for Appointment."""
