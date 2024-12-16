@@ -1,6 +1,6 @@
 Bonjour {{patient_profile.first_name}},
 
-Votre rendez-vous a été confirmé pour le {{appointment.date}} à {{appointment.time}} avec le Dr. {{staff_profile.last_name}}.
+Votre rendez-vous a été confirmé pour le {{appointment_date}} à {{appointment_time}} avec le {{title}}. {{staff_profile.last_name}}.
 
 Merci de vous présenter à l'heure prévue.
 
@@ -8,7 +8,7 @@ Merci de vous présenter à l'heure prévue.
 
 Hello {{patient_profile.first_name}},
 
-Your appointment has been confirmed for {{appointment.date}} at {{appointment.time}} with Dr. {{staff_profile.last_name}}.
+Your appointment has been confirmed for {{appointment_date}} at {{appointment_time}} with {{title}}. {{staff_profile.last_name}}.
 
 Please make sure to arrive on time.
 

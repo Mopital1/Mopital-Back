@@ -100,6 +100,7 @@ class GroupDetailSerializer(BaseSerializer):
 
 class CreateProfileSerializer(BaseSerializer):
     user_typ = serializers.CharField(required=False, write_only=True)
+    title = serializers.CharField(required=False, write_only=True)
     # staff_type = serializers.CharField(required=False, write_only=True)
     # speciality id is only for staff, and is uuid
     speciality_id = serializers.UUIDField(required=False, write_only=True)
@@ -115,6 +116,7 @@ class CreateProfileSerializer(BaseSerializer):
             "user_typ",
             # "staff_type",
             "speciality_id",
+            "title",
             "gender",
             "dob",
             )
@@ -139,7 +141,7 @@ class CreateProfileSerializer(BaseSerializer):
             user_typ = validated_data.pop("user_typ", "PATIENT")
             # staff_type = validated_data.pop("staff_type", "GENERALIST")
             speciality_id = validated_data.pop("speciality_id", None)
-            
+            title = validated_data.pop("title", None)
             profile = Profile.objects.create(**validated_data)
             email = get_user_email(validated_data.get("first_name"), validated_data.get("last_name"))
             
@@ -152,11 +154,10 @@ class CreateProfileSerializer(BaseSerializer):
             if user_typ == "PATIENT":
                 patient = Patients.objects.create(height=0, weight=0)
                 user.patient = patient
-                user.save()
             elif user_typ == "STAFF":
-                staff = Staffs.objects.create(speciality_id=speciality_id)
+                staff = Staffs.objects.create(speciality_id=speciality_id, title=title)
                 user.staff = staff
-                user.save()
+            user.save()
 
             otp_instance = OTP.objects.create(user=user)
             otp_code = str(otp_instance.otp)

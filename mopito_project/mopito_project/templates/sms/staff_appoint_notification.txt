@@ -1,6 +1,6 @@
-Bonjour {{staff_profile.first_name}},
+Bonjour {{title}}. {{staff_profile.last_name}},
 
-Le patient {{appointment.patient_profile.first_name}} a demandé un rendez-vous pour le {{appointment.date}} à {{appointment.time}}.
+Un rendez-vous vous est demandé avec {{appointment.patient_profile.first_name}} a demandé un rendez-vous pour le {{appointment_date}} à {{appointment_time}}.
 
 Merci.
 
@@ -8,7 +8,7 @@ Merci.
 
 Hello {{staff_profile.first_name}},
 
-The patient {{appointment.patient_profile.first_name}} has requested an appointment for {{appointment.date}} at {{appointment.time}}.
+An appointment is requested with {{appointment.patient_profile.first_name}} for {{appointment_date}} at {{appointment_time}}.
 
 Thank you.
 

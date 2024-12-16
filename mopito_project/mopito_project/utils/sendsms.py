@@ -40,6 +40,7 @@ def send_appoint_notification(appointment, template, phone_number, sender_name="
                                             'appointment_date': appointment_date,
                                             'patient_profile': patient_profile,
                                             'appointment_time': appointment_time,
+                                            'title': appointment.staff.title,
                                             'sender_id': SMS_API_USER_ID
                                             }
                                    )
