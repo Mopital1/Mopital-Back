@@ -16,7 +16,7 @@ from mopito_project.utils.sendsms import phoneNumberGenerator
 from mopito_project.users.api.serializers import CompleteProfileSerializer, CreateProfileSerializer, ProfileSerializer
 from mopito_project.users.models import Profile, User
 from mopito_project.actors.api.serializers import CreatePatientSerializer
-from mopito_project.background_jobs.tasks import send_otp_to_user
+# from mopito_project.background_jobs.tasks import send_otp_to_user
 
 class PatientViewSet(BaseModelViewSet, mixins.ListModelMixin,
                              mixins.RetrieveModelMixin,
@@ -43,7 +43,7 @@ class PatientViewSet(BaseModelViewSet, mixins.ListModelMixin,
 
     def get_queryset(self):
         user = self.request.user
-        send_otp_to_user(repeat=86400)
+        # send_otp_to_user(repeat=86400)
         if user.user_typ == "PATIENT":
             # return Patients.objects.filter(id=user.patient.id)
             return Patients.objects.filter(patient_parent_id=user.patient.id)

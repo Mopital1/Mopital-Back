@@ -91,7 +91,7 @@ THIRD_PARTY_APPS = [
     "rest_framework.authtoken",
     "corsheaders",
     "drf_spectacular",
-    "background_task",
+    # "background_task",
 
 ]
 
@@ -100,7 +100,7 @@ LOCAL_APPS = [
     "mopito_project.core",
     "mopito_project.actors",
     "mopito_project.appointments",
-    "mopito_project.background_jobs",
+    # "mopito_project.background_jobs",
     # Your stuff: custom apps go here
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
