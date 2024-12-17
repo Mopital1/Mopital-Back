@@ -22,6 +22,8 @@ from django.db import transaction
 # from hemodialyse.core.api.serializers import BaseSerializer
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer, TokenRefreshSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
+import uuid
+
 
 from mopito_project.core.api.serializers import BaseSerializer
 from mopito_project.utils.functionUtils import get_user_email
@@ -142,6 +144,15 @@ class CreateProfileSerializer(BaseSerializer):
             # staff_type = validated_data.pop("staff_type", "GENERALIST")
             speciality_id = validated_data.pop("speciality_id", None)
             title = validated_data.pop("title", None)
+            profile_picture_file = validated_data.get("profile_picture_file")
+            if profile_picture_file:
+                if profile_picture_file.size > 10 * 1024 * 1024:
+                    raise serializers.ValidationError("Profile picture file size should not exceed 10 Mb")
+                if not profile_picture_file.content_type.startswith('image/'):
+                    raise serializers.ValidationError("File is not an image")
+                file_name, file_extension = profile_picture_file.name.rsplit('.', 1)
+                profile_picture_file.name = f"{file_name.replace(' ','_')}_{uuid.uuid4().hex[:8]}.{file_extension}"
+                validated_data["profile_picture_file"] = profile_picture_file
             profile = Profile.objects.create(**validated_data)
             email = get_user_email(validated_data.get("first_name"), validated_data.get("last_name"))
             

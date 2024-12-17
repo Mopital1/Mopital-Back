@@ -33,6 +33,9 @@ class AppointmentSerializer(BaseSerializer):
         """
         user = self.context['request'].user
         try:
+            appointment_date = validated_data.get("appointment_date")
+            if appointment_date <= datetime.now():
+                raise serializers.ValidationError("La date du rendez-vous doit être dans le futur.")
             appointment = Appointment.objects.create(**validated_data)
             # envoyer une notification au staff
             # staff_phone_number = appointment.staff.user.profile.phone_number

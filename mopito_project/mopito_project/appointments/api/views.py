@@ -2,6 +2,8 @@ from django.shortcuts import render
 
 from mopito_project.appointments.models import Appointment, Consultation, Notification, Review
 from rest_framework import filters, mixins, status
+from django.db.models import Q
+
 
 from rest_framework.parsers import FormParser, MultiPartParser, JSONParser
 from django_filters.rest_framework import DjangoFilterBackend
@@ -41,7 +43,7 @@ class AppointmentViewSet(BaseModelViewSet, mixins.ListModelMixin,
     def get_queryset(self):
         user = self.request.user
         if user.user_typ == "PATIENT":
-            return Appointment.objects.filter(patient_id=user.patient.id)
+            return Appointment.objects.filter(Q(patient_id=user.patient.id) | Q(patient__parent_id=user.patient.id))
         if user.user_typ == "STAFF":
             return Appointment.objects.filter(staff_id=user.staff.id)
         return Appointment.objects.filter(is_active=True)

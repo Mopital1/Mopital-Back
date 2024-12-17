@@ -184,6 +184,19 @@ class PatientDetailSerializer(BaseSerializer):
         children = obj.children.all()
         return PatientSerializer(children, many=True).data
 
+class SpecialitySerializer(BaseSerializer):
+    class Meta:
+        model = Speciality
+        fields = (
+            "id",
+            "name",
+            "description",
+            "created_at",
+            "updated_at",
+        )
+        read_only_fields = ("id", "created_at", "updated_at",)
+
+
 class StaffSerializer(BaseSerializer):
     # 
     class Meta:
@@ -198,12 +211,14 @@ class StaffSerializer(BaseSerializer):
 
 class StaffDetailSerializer(BaseSerializer):
     user = UserProfileSerializer()
+    speciality = SpecialitySerializer()
     class Meta:
         model = Staffs
         fields = (
             "id", 
             "type",
             "title",
+            "speciality",
             "user",
             "created_at",
             "updated_at",
@@ -281,18 +296,6 @@ class ClinicSerializer(BaseSerializer):
             "email",
             "start_time",
             "end_time",
-            "created_at",
-            "updated_at",
-        )
-        read_only_fields = ("id", "created_at", "updated_at",)
-
-class SpecialitySerializer(BaseSerializer):
-    class Meta:
-        model = Speciality
-        fields = (
-            "id",
-            "name",
-            "description",
             "created_at",
             "updated_at",
         )
