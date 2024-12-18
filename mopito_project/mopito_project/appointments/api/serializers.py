@@ -68,9 +68,26 @@ class AppointmentSerializer(BaseSerializer):
             return appointment
         except Exception as e:
             raise serializers.ValidationError(f"Erreur lors de la création du rendez-vous : {e}")
-                
+
+class UpdateAppointmentSerializer(BaseSerializer):
+    patient = serializers.UUIDField(required=False)
+    staff = serializers.UUIDField(required=False)
+    class Meta:
+        model = Appointment
+        fields = (
+            "id",
+            "appointment_date",
+            "description",
+            "patient",
+            "staff",
+            "status",
+            "created_at",
+            "updated_at",
+        )
+        read_only_fields = ("id", "created_at", "updated_at",)
+
     def update(self, instance, validated_data):
-            current_date = datetime.now()
+            current_date = timezone.now()
             
             if instance.patient_update_count <= 3:  
                 instance.appointment_date = validated_data.get("appointment_date", instance.appointment_date)  
@@ -82,7 +99,11 @@ class AppointmentSerializer(BaseSerializer):
                 raise serializers.ValidationError("La date du rendez-vous a été modifiée plus de 3 fois.")
             
             if "appointment_date" in validated_data:
-                    if validated_data.get("appointment_date") > current_date:
+                    appointment_date = validated_data.get("appointment_date")
+                    # Validation de la date de rendez-vous
+                    if appointment_date and appointment_date.tzinfo is None:
+                        appointment_date = timezone.make_aware(appointment_date) 
+                    if appointment_date >= current_date:
                         instance.patient_update_count += 1
                     else:
                         raise serializers.ValidationError("La date du rendez-vous doit être dans le futur.")

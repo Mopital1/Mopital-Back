@@ -9,7 +9,7 @@ from rest_framework.parsers import FormParser, MultiPartParser, JSONParser
 from django_filters.rest_framework import DjangoFilterBackend
 
 from mopito_project.core.api.views import BaseModelViewSet
-from mopito_project.appointments.api.serializers import AppointmentDetailSerializer, AppointmentSerializer, ConsultationSerializer, NotificationDetailSerializer, NotificationSerializer
+from mopito_project.appointments.api.serializers import AppointmentDetailSerializer, AppointmentSerializer, ConsultationSerializer, NotificationDetailSerializer, NotificationSerializer, UpdateAppointmentSerializer
 
 # Create your views here.
 
@@ -51,6 +51,8 @@ class AppointmentViewSet(BaseModelViewSet, mixins.ListModelMixin,
     def get_serializer_class(self):
         if self.action == "list" or self.action == "retrieve":
             return AppointmentDetailSerializer
+        if self.action == "update":
+            return UpdateAppointmentSerializer
         return AppointmentSerializer
     
 class ReviewViewSet(BaseModelViewSet, mixins.ListModelMixin,
