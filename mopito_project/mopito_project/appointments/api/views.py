@@ -43,7 +43,7 @@ class AppointmentViewSet(BaseModelViewSet, mixins.ListModelMixin,
     def get_queryset(self):
         user = self.request.user
         if user.user_typ == "PATIENT":
-            return Appointment.objects.filter(Q(patient_id=user.patient.id) | Q(patient__parent_id=user.patient.id))
+            return Appointment.objects.filter(Q(patient_id=user.patient.id) | Q(patient__patient_parent_id=user.patient.id))
         if user.user_typ == "STAFF":
             return Appointment.objects.filter(staff_id=user.staff.id)
         return Appointment.objects.filter(is_active=True)
