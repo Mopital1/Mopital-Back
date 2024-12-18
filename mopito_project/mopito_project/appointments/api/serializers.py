@@ -33,6 +33,8 @@ class AppointmentSerializer(BaseSerializer):
         """
         user = self.context['request'].user
         try:
+            if validated_data.get("patient") is None:
+                validated_data["patient"] = user.patient
             appointment_date = validated_data.get("appointment_date")
             if appointment_date <= datetime.now():
                 raise serializers.ValidationError("La date du rendez-vous doit être dans le futur.")
