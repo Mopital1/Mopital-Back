@@ -5,14 +5,16 @@ from mopito_project.actors.api.serializers import PatientDetailSerializer, Staff
 from rest_framework import serializers
 from django.db import transaction
 from datetime import datetime
+from django.utils import timezone
+from django.shortcuts import get_object_or_404
 
-
-from mopito_project.actors.models import Patients
+from mopito_project.actors.models import Patients, Staffs
 from mopito_project.utils.sendsms import phoneNumberGenerator, send_appoint_notification
 from mopito_project.users.models import Profile, User
 
 class AppointmentSerializer(BaseSerializer):
-    
+    patient = serializers.UUIDField(required=False)
+    staff = serializers.UUIDField(required=False)
     class Meta:
         model = Appointment
         fields = (
@@ -26,28 +28,47 @@ class AppointmentSerializer(BaseSerializer):
             "updated_at",
         )
         read_only_fields = ("id", "created_at", "updated_at",)
+    
+    def validate(self, validated_data):
+        user = self.context['request'].user
+        appointment_date = validated_data.get("appointment_date")
+
+        # Validation de la date de rendez-vous
+        if appointment_date and appointment_date.tzinfo is None:
+            appointment_date = timezone.make_aware(appointment_date) 
+        current_time = timezone.now()
+        if appointment_date <= current_time:
+            raise serializers.ValidationError("La date du rendez-vous doit être dans le futur.")
+
+        # Validation du patient
+        patient_uuid = validated_data.get("patient")
+        if patient_uuid:
+            validated_data["patient"] = get_object_or_404(Patients, id=patient_uuid)
+            
+        else:
+            validated_data["patient"] = user.patient
+
+        # Validation du personnel
+        staff_uuid = validated_data.get("staff")
+        if staff_uuid:
+            validated_data["staff"] = get_object_or_404(Staffs, id=staff_uuid)
+            
+        return validated_data
 
     def create(self, validated_data):
         """
         créer un rendez vous pour un patient ou pour son proche
         """
         user = self.context['request'].user
+
         try:
-            if validated_data.get("patient") is None:
-                validated_data["patient"] = user.patient
-            appointment_date = validated_data.get("appointment_date")
-            if appointment_date <= datetime.now():
-                raise serializers.ValidationError("La date du rendez-vous doit être dans le futur.")
             appointment = Appointment.objects.create(**validated_data)
-            # envoyer une notification au staff
-            # staff_phone_number = appointment.staff.user.profile.phone_number
-            # send_appoint_notification(appointment,'sms/staff_appoint_notification.txt', staff_phone_number)
             # envoyer une notification au patient
-            send_appoint_notification(appointment,'sms/patient_appoint_confirmation.txt', user.profile.phone_number)
+            send_appoint_notification(appointment, 'sms/patient_appoint_confirmation.txt', user.profile.phone_number)
             return appointment
         except Exception as e:
             raise serializers.ValidationError(f"Erreur lors de la création du rendez-vous : {e}")
-            
+                
     def update(self, instance, validated_data):
             current_date = datetime.now()
             
