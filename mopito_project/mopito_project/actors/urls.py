@@ -10,7 +10,10 @@ from mopito_project.actors.api.views import (
     SubscriptionViewSet, 
     TimeSlotViewSet,
     DocumentViewSet,
-    MedicalFolderViewSet
+    MedicalFolderViewSet,
+    PricingViewSet,
+    PaymentMethodViewSet,
+    StaffPathViewSet
 )
 
 
@@ -27,7 +30,11 @@ router.register("profile", ProfileViewSet)
 router.register("countries", CountryViewSet)
 router.register("specialities", SpecialityViewSet),
 router.register("medical_folders", MedicalFolderViewSet),
-router.register("documents", DocumentViewSet)
+router.register("documents", DocumentViewSet),
+router.register("staff_paths", StaffPathViewSet),
+router.register("payment_methods", PaymentMethodViewSet),
+router.register("pricings", PricingViewSet)
+
 
 
 urlpatterns = []

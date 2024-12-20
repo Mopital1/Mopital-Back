@@ -120,7 +120,8 @@ class Speciality(BaseModel):
     name = models.CharField(_("name"), max_length=200)
     description = models.TextField(_("description"))
 
-    
+# class Pricing(BaseModel):
+
 class Staffs(BaseModel):
     pro_title = (
         ("Dr", "Dr"),
@@ -136,6 +137,7 @@ class Staffs(BaseModel):
     title = models.CharField(_("title"), max_length=10, choices=pro_title, default="Dr")
     professional_card = models.FileField(_("professional_card"), upload_to="professional_cards/%Y/%m/%D/", null=True, blank=True)
     diploma = models.FileField(_("diploma"), upload_to="diplomas/%Y/%m/%D/", null=True, blank=True)
+    presentation = models.TextField(_("presentation"), null=True, blank=True)
 
     class Meta:
         """
@@ -145,6 +147,56 @@ class Staffs(BaseModel):
         verbose_name_plural = _("Staffs")
         ordering = ("-created_at",)
 
+class StaffPath(BaseModel):
+    path_types = (("FORMATION", "FORMATION"), ("EXPERIENCE", "EXPERIENCE"))
+    staff = models.ForeignKey(Staffs, on_delete=models.CASCADE, related_name="staff_paths")
+    description = models.TextField(_("description"),)
+    start_year = models.IntegerField(_("start_date"))
+    end_year = models.IntegerField(_("end_date"), null=True, blank=True)
+    path_type = models.CharField(_("path_type"), max_length=20, choices=path_types, default="FORMATION")
+    class Meta:
+        """
+        the place to configure de class or entities
+        """
+        verbose_name = _("StaffPath")
+        verbose_name_plural = _("StaffPaths")
+        ordering = ("-created_at",)
+
+class PaymentMethod(BaseModel):
+    payment_types = (
+        ("ORANGE_MONEY", "ORANGE_MONEY"),
+        ("MTN_MOBILE_MONEY", "MTN_MOBILE_MONEY")
+    )
+    payment_type = models.CharField(_("payment_type"), max_length=20, choices=payment_types, default="ORANGE_MONEY")
+    phone_number = models.CharField(_("phone_number"), max_length=20)
+    staff = models.ForeignKey(Staffs, on_delete=models.CASCADE, related_name="payment_methods")
+
+    class Meta:
+        """
+        the place to configure de class or entities
+        """
+        verbose_name = _("PaymentMethod")
+        verbose_name_plural = _("PaymentMethods")
+        ordering = ("-created_at",)
+
+class Pricing(BaseModel):
+    pricing_types = (
+        ("CHILD", "CHILD"),
+        ("ADULT", "ADULT"),
+        ("NORMAL", "NORMAL"),
+        ("DISABLED", "DISABLED"),
+    )
+    amount = models.FloatField(_("amount"), default=0.0)
+    pricing_type = models.CharField(_("pricing_type"), max_length=10, choices=pricing_types, default="NORMAL")
+    staff = models.ForeignKey(Staffs, on_delete=models.CASCADE, related_name="staff_pricing")
+
+    class Meta:
+        """
+        the place to configure de class or entities
+        """
+        verbose_name = _("Pricing")
+        verbose_name_plural = _("Pricings")
+        ordering = ("-created_at",)
 
 class TimeSlots(BaseModel):
     days_of_week = (

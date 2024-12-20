@@ -1,6 +1,19 @@
 
 from mopito_project.core.api.serializers import BaseSerializer
-from mopito_project.actors.models import Clinics, Countries, Patients, Speciality, Staffs, Subscriptions, TimeSlots, MedicalFolder, Document
+from mopito_project.actors.models import (
+    Clinics, 
+    Countries, 
+    Patients, 
+    Speciality, 
+    Staffs, 
+    Subscriptions, 
+    TimeSlots, 
+    MedicalFolder, 
+    Document,
+    StaffPath,
+    PaymentMethod,
+    Pricing
+)
 from mopito_project.users.models import Profile, User
 from mopito_project.users.api.serializers import ProfileSerializer, UserSerializer
 from rest_framework import serializers
@@ -214,6 +227,7 @@ class PatientDetailSerializer(BaseSerializer):
     # profile = ProfileSerializer(source="user.profile")
     user = UserProfileSerializer()
     children = serializers.SerializerMethodField(read_only=True)
+    medical_folder = MedicalFolderDetailSerializer()
     # children = UserProfileSerializer(many=True)
     # patient_parent = UserProfileSerializer(source="patient_parent.user", read_only=True)
     class Meta:
@@ -227,6 +241,7 @@ class PatientDetailSerializer(BaseSerializer):
             "blood_group",
             "hemoglobin",
             "parent_relation_typ",
+            "medical_folder",
             # "patient_parent",
             "children",
             "user",
@@ -260,6 +275,7 @@ class StaffSerializer(BaseSerializer):
             "id",
             "type",
             "title",
+            "presentation",
             "professional_card",
             "diploma",
             "created_at",
@@ -290,21 +306,67 @@ class TimeSlotSerializer(BaseSerializer):
     #     timeslot = TimeSlots.objects.create(**validated_data)
     #     return timeslot
 
+class StaffPathSerializer(BaseSerializer):
+    class Meta:
+        model = StaffPath
+        fields = (
+            "id",
+            "description",
+            "start_year",
+            "end_year",
+            "path_type",
+            "staff",
+            "created_at",
+            "updated_at"
+        )
+    read_only_fields = ("id", "created_at", "updated_at",)
+
+class PaymentMethodSerializer(BaseSerializer):
+    class Meta:
+        model = PaymentMethod
+        fields = (
+            "id",
+            "payment_type",
+            "phone_number",
+            "staff",
+            "created_at",
+            "updated_at"
+        )
+    read_only_fields = ("id", "created_at", "updated_at",)
+
+class PricingSerializer(BaseSerializer):
+    class Meta:
+        model = Pricing
+        fields = (
+            "id",
+            "amount",
+            "pricing_type",
+            "staff",
+            "created_at",
+            "updated_at"
+        )
 class StaffDetailSerializer(BaseSerializer):
     user = UserProfileSerializer()
     speciality = SpecialitySerializer()
     time_slots = TimeSlotSerializer(many=True)
+    staff_paths = StaffPathSerializer(many=True)
+    staff_pricing = PricingSerializer(many=True)
+    payment_methods = PaymentMethodSerializer(many=True)
     class Meta:
         model = Staffs
         fields = (
             "id", 
             "type",
             "title",
+            "presentation",
+            "staff_paths",
             "professional_card",
             "diploma",
             "speciality",
+            "staff_pricing",
             "time_slots",
             "user",
+            "payment_methods",
             "created_at",
             "updated_at",
             )

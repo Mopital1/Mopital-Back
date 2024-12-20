@@ -9,7 +9,20 @@ from django.db import transaction
 from django.db.models import Q
 from rest_framework.parsers import FormParser, MultiPartParser, JSONParser  
 from mopito_project.core.api.views import BaseModelViewSet
-from mopito_project.actors.models import Clinics, Countries,  Patients, Speciality, Staffs, Subscriptions, TimeSlots, MedicalFolder, Document
+from mopito_project.actors.models import (
+    Clinics, 
+    Countries, 
+    Patients, 
+    Speciality, 
+    Staffs, 
+    Subscriptions, 
+    TimeSlots, 
+    MedicalFolder, 
+    Document, 
+    StaffPath,
+    Pricing,
+    PaymentMethod
+)
 from actors.api.serializers import (
     ClinicDetailSerializer, 
     ClinicSerializer, 
@@ -27,7 +40,10 @@ from actors.api.serializers import (
     UpdatePatientSerializer,
     MedicalFolderSerializer,
     MedicalFolderDetailSerializer,
-    DocumentSerializer
+    DocumentSerializer,
+    StaffPathSerializer,
+    PricingSerializer,
+    PaymentMethodSerializer
 )
 
 from mopito_project.utils.functionUtils import get_user_email, remove_special_characters
@@ -46,6 +62,7 @@ class MedicalFolderViewSet(BaseModelViewSet, mixins.ListModelMixin,
     serializer_class = MedicalFolderSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = {
+        "patient_id": ['exact'],
         "patient__user__profile__first_name": ['exact', 'icontains'],
         "updated_at": ['gte', 'lte', 'exact', 'gt', 'lt'],
         "created_at": ['gte', 'lte', 'exact', 'gt', 'lt']
@@ -55,10 +72,77 @@ class MedicalFolderViewSet(BaseModelViewSet, mixins.ListModelMixin,
     ordering = ["-updated_at", "-created_at"]
     parser_classes = [FormParser, MultiPartParser, JSONParser]
 
+    def get_queryset(self):
+        user = self.request.user
+        # send_otp_to_user(repeat=86400)
+        if user.user_typ == "PATIENT":
+            return MedicalFolder.objects.filter(patient=user.patient)
+        return MedicalFolder.objects.filter(is_active=True)
+
     def get_serializer_class(self):
         if self.action == "list" or self.action == "retrieve":
             return MedicalFolderDetailSerializer
         return MedicalFolderSerializer
+    
+class StaffPathViewSet(BaseModelViewSet, mixins.ListModelMixin,
+                             mixins.RetrieveModelMixin,
+                             mixins.UpdateModelMixin,
+                             mixins.CreateModelMixin):
+    queryset = StaffPath.objects.filter(is_active=True)
+    serializer_class = StaffPathSerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = {
+        # "patient__user__profile__first_name": ['exact', 'icontains'],
+        "staff_id": ['exact'],
+        "path_type": ['exact'],
+        "description": ['exact', 'icontains'],
+        "start_year": ['gte', 'lte', 'exact', 'gt', 'lt'],
+        "end_year": ['gte', 'lte', 'exact', 'gt', 'lt'],
+        "updated_at": ['gte', 'lte', 'exact', 'gt', 'lt'],
+        "created_at": ['gte', 'lte', 'exact', 'gt', 'lt']
+    }
+    search_fields = ["description"]
+    ordering_fields = ["updated_at", "created_at"]
+    ordering = ["-updated_at", "-created_at"]
+    parser_classes = [FormParser, MultiPartParser, JSONParser]
+
+class PaymentMethodViewSet(BaseModelViewSet, mixins.ListModelMixin,
+                             mixins.RetrieveModelMixin,
+                             mixins.UpdateModelMixin,
+                             mixins.CreateModelMixin):
+    queryset = PaymentMethod.objects.filter(is_active=True)
+    serializer_class = PaymentMethodSerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = {
+        "staff_id": ['exact'],
+        "payment_type": ['exact'],
+        "updated_at": ['gte', 'lte', 'exact', 'gt', 'lt'],
+        "created_at": ['gte', 'lte', 'exact', 'gt', 'lt']
+
+    }
+    search_fields = ["phone_number"]
+    ordering_fields = ["updated_at", "created_at"]
+    ordering = ["-updated_at", "-created_at"]
+    parser_classes = [FormParser, MultiPartParser, JSONParser]
+
+class PricingViewSet(BaseModelViewSet, mixins.ListModelMixin,
+                             mixins.RetrieveModelMixin,
+                             mixins.UpdateModelMixin,
+                             mixins.CreateModelMixin):
+    queryset = Pricing.objects.filter(is_active=True)
+    serializer_class = PricingSerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = {
+        "staff_id": ['exact'],
+        "pricing_type": ['exact'],
+        "updated_at": ['gte', 'lte', 'exact', 'gt', 'lt'],
+        "created_at": ['gte', 'lte', 'exact', 'gt', 'lt']
+    }
+    search_fields = ["pricing_type", "amount"]
+    ordering_fields = ["updated_at", "created_at"]
+    ordering = ["-updated_at", "-created_at"]
+    parser_classes = [FormParser, MultiPartParser, JSONParser]
+
 class DocumentViewSet(BaseModelViewSet, mixins.ListModelMixin,
                              mixins.RetrieveModelMixin,
                              mixins.UpdateModelMixin,
@@ -68,7 +152,7 @@ class DocumentViewSet(BaseModelViewSet, mixins.ListModelMixin,
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = {
         "document_name": ['exact', 'icontains'],
-        "medical_folder": ['exact'],
+        "medical_folder_id": ['exact'],
         "updated_at": ['gte', 'lte', 'exact', 'gt', 'lt'],
         "created_at": ['gte', 'lte', 'exact', 'gt', 'lt']
 
