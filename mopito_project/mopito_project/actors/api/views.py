@@ -6,10 +6,29 @@ from rest_framework.decorators import action, permission_classes
 from rest_framework.response import Response
 from rest_framework import filters, mixins, status
 from django.db import transaction
+from django.db.models import Q
 from rest_framework.parsers import FormParser, MultiPartParser, JSONParser  
 from mopito_project.core.api.views import BaseModelViewSet
-from mopito_project.actors.models import Clinics, Countries,  Patients, Speciality, Staffs, Subscriptions, TimeSlots
-from actors.api.serializers import ClinicDetailSerializer, ClinicSerializer, CountrySerializer,  NearPatientSerializer, PatientDetailSerializer, PatientSerializer, SpecialitySerializer, StaffDetailSerializer, StaffSerializer, SubscriptionDetailSerializer, SubscriptionSerializer, TimeSlotDetailSerializer, TimeSlotSerializer, UpdatePatientSerializer
+from mopito_project.actors.models import Clinics, Countries,  Patients, Speciality, Staffs, Subscriptions, TimeSlots, MedicalFolder, Document
+from actors.api.serializers import (
+    ClinicDetailSerializer, 
+    ClinicSerializer, 
+    CountrySerializer,  
+    NearPatientSerializer, 
+    PatientDetailSerializer, 
+    PatientSerializer, 
+    SpecialitySerializer, 
+    StaffDetailSerializer, 
+    StaffSerializer, 
+    SubscriptionDetailSerializer, 
+    SubscriptionSerializer, 
+    TimeSlotDetailSerializer, 
+    TimeSlotSerializer, 
+    UpdatePatientSerializer,
+    MedicalFolderSerializer,
+    MedicalFolderDetailSerializer,
+    DocumentSerializer
+)
 
 from mopito_project.utils.functionUtils import get_user_email, remove_special_characters
 from mopito_project.utils.sendsms import phoneNumberGenerator
@@ -17,6 +36,49 @@ from mopito_project.users.api.serializers import CompleteProfileSerializer, Crea
 from mopito_project.users.models import Profile, User
 from mopito_project.actors.api.serializers import CreatePatientSerializer
 # from mopito_project.background_jobs.tasks import send_otp_to_user
+
+
+class MedicalFolderViewSet(BaseModelViewSet, mixins.ListModelMixin,
+                             mixins.RetrieveModelMixin,
+                             mixins.UpdateModelMixin,
+                             mixins.CreateModelMixin):
+    queryset = MedicalFolder.objects.filter(is_active=True)
+    serializer_class = MedicalFolderSerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = {
+        "patient__user__profile__first_name": ['exact', 'icontains'],
+        "updated_at": ['gte', 'lte', 'exact', 'gt', 'lt'],
+        "created_at": ['gte', 'lte', 'exact', 'gt', 'lt']
+    }
+    search_fields = ["patient__user__profile__first_name"]
+    ordering_fields = ["updated_at", "created_at"]
+    ordering = ["-updated_at", "-created_at"]
+    parser_classes = [FormParser, MultiPartParser, JSONParser]
+
+    def get_serializer_class(self):
+        if self.action == "list" or self.action == "retrieve":
+            return MedicalFolderDetailSerializer
+        return MedicalFolderSerializer
+class DocumentViewSet(BaseModelViewSet, mixins.ListModelMixin,
+                             mixins.RetrieveModelMixin,
+                             mixins.UpdateModelMixin,
+                             mixins.CreateModelMixin):
+    queryset = Document.objects.filter(is_active=True)
+    serializer_class = DocumentSerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = {
+        "document_name": ['exact', 'icontains'],
+        "medical_folder": ['exact'],
+        "updated_at": ['gte', 'lte', 'exact', 'gt', 'lt'],
+        "created_at": ['gte', 'lte', 'exact', 'gt', 'lt']
+
+    }
+    search_fields = ["document_name"]
+    ordering_fields = ["updated_at", "created_at"]
+    ordering = ["-updated_at", "-created_at"]
+    parser_classes = [FormParser, MultiPartParser, JSONParser]
+
+
 
 class PatientViewSet(BaseModelViewSet, mixins.ListModelMixin,
                              mixins.RetrieveModelMixin,
@@ -143,6 +205,21 @@ class StaffViewSet(BaseModelViewSet, mixins.ListModelMixin,
     ordering_fields = ["updated_at", "created_at"]
     ordering = ["-updated_at", "-created_at"]
 
+    def get_queryset(self):
+        user = self.request.user
+        # send_otp_to_user(repeat=86400)
+        if user.user_typ == "PATIENT":
+            similar_staffs = Staffs.objects.filter(is_active=True)
+            if user.profile.city:
+                similar_staffs = similar_staffs.filter(user__profile__city__icontains=user.profile.city)
+            # similar_staffs = Staffs.objects.filter(
+            #     Q(user__profile__quarter__icontains=user.profile.quarter) |
+            #     Q(user__profile__city__icontains=user.profile.city)
+            # )
+            return similar_staffs
+        return Staffs.objects.filter(is_active=True)
+
+
     def get_serializer_class(self):
         if self.action == "list" or self.action == "retrieve":
             return StaffDetailSerializer
@@ -159,17 +236,18 @@ class TimeSlotViewSet(BaseModelViewSet, mixins.ListModelMixin,
         "staff_id": ['exact'],
         "staff__user__profile__first_name": ['exact', 'contains'],
         "is_available": ['exact'],
-        "start_time": ['gte', 'lte', 'exact', 'gt', 'lt'],
-        "end_time": ['gte', 'lte', 'exact', 'gt', 'lt'],
+        "close_time": ['gte', 'lte', 'exact', 'gt', 'lt'],
+        "open_time": ['gte', 'lte', 'exact', 'gt', 'lt'],
+        "day_of_week": ['exact']
         # "updated_at": ['gte', 'lte', 'exact', 'gt', 'lt'],
         # "created_at": ['gte', 'lte', 'exact', 'gt', 'lt']
     }
-    search_fields = ["staff__user__profile__first_name"]
+    search_fields = ["staff__user__profile__first_name", "day_of_week"]
     ordering_fields = ["updated_at", "created_at"]
     ordering = ["-updated_at", "-created_at"]
 
     def get_serializer_class(self):
-        if self.action == "list" or self.action == "retrieve":
+        if self.action == "retrieve":
             return TimeSlotDetailSerializer
         return TimeSlotSerializer
 

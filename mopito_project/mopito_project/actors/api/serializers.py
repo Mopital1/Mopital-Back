@@ -1,9 +1,11 @@
 
 from mopito_project.core.api.serializers import BaseSerializer
-from mopito_project.actors.models import Clinics, Countries, Patients, Speciality, Staffs, Subscriptions, TimeSlots
+from mopito_project.actors.models import Clinics, Countries, Patients, Speciality, Staffs, Subscriptions, TimeSlots, MedicalFolder, Document
 from mopito_project.users.models import Profile, User
 from mopito_project.users.api.serializers import ProfileSerializer, UserSerializer
 from rest_framework import serializers
+from mopito_project.utils.functionUtils import enc_decrypt_permutation
+
 
 class CreatePatientSerializer(BaseSerializer):
     class Meta:
@@ -21,6 +23,59 @@ class CreatePatientSerializer(BaseSerializer):
             "updated_at",
         )
         read_only_fields = ("id", "created_at", "updated_at",)
+
+class MedicalFolderSerializer(BaseSerializer):
+    class Meta:
+        model = MedicalFolder
+        fields = (
+            "id",
+            "medical_history",
+            "ongoing_treatments",
+            "patient",
+            "recent_consultations_summary",
+            "lifestyle_and_habits",
+            "emergency_contact",
+            "medical_folder_password",
+            "created_at",
+            "updated_at",
+        )
+        read_only_fields = ("id", "created_at", "updated_at",)
+
+class DocumentSerializer(BaseSerializer):
+    class Meta:
+        model = Document
+        fields = (
+            "id",
+            "document_name",
+            "document", 
+            "medical_folder",
+            "created_at",
+            "updated_at",
+        )
+
+class MedicalFolderDetailSerializer(BaseSerializer):
+    medical_folder_password = serializers.SerializerMethodField()
+    documents = DocumentSerializer(many=True)
+    class Meta:
+        model = MedicalFolder
+        fields = (
+            "id",
+            "medical_history",
+            "ongoing_treatments",
+            "patient",
+            "recent_consultations_summary",
+            "lifestyle_and_habits",
+            "emergency_contact",
+            "medical_folder_password",
+            "documents",
+            "created_at",
+            "updated_at",
+        )
+        read_only_fields = ("id", "created_at", "updated_at",)
+
+    def get_medical_folder_password(self, obj):
+        medical_folder_password = enc_decrypt_permutation(obj.medical_folder_password)
+        return medical_folder_password
 
 class PatientSerializer(BaseSerializer):
     first_name = serializers.CharField(source="user.profile.first_name")
@@ -205,6 +260,8 @@ class StaffSerializer(BaseSerializer):
             "id",
             "type",
             "title",
+            "professional_card",
+            "diploma",
             "created_at",
             "updated_at"
         )
@@ -218,6 +275,8 @@ class StaffDetailSerializer(BaseSerializer):
             "id", 
             "type",
             "title",
+            "professional_card",
+            "diploma",
             "speciality",
             "user",
             "created_at",
@@ -230,13 +289,24 @@ class TimeSlotSerializer(BaseSerializer):
         model = TimeSlots
         fields = (
             "id",
-            "start_time",
-            "end_time",
+            "day_of_week",
+            # "start_time",
+            # "end_time",
+            "open_time",
+            "close_time",
+            "staff",
             "is_available",
             "created_at",
             "updated_at"
         )
         read_only_fields = ("id", "created_at", "updated_at",)
+
+    # def create(self, validated_data):
+    #     user = self.context['request'].user
+    #     if user.user_typ == "STAFF":
+    #         validated_data["staff"] = user.staff
+    #     timeslot = TimeSlots.objects.create(**validated_data)
+    #     return timeslot
 
 class TimeSlotDetailSerializer(BaseSerializer):
     staff = StaffDetailSerializer()
@@ -244,8 +314,10 @@ class TimeSlotDetailSerializer(BaseSerializer):
         model = TimeSlots
         fields = (
             "id",
-            "start_time",
-            "end_time",
+            # "start_time",
+            # "end_time",
+             "open_time",
+            "close_time",
             "is_available",
             "staff",
             "created_at",

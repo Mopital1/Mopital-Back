@@ -1,7 +1,9 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+import uuid
 
 from mopito_project.core.models import BaseModel
+from mopito_project.utils.functionUtils import enc_decrypt_permutation
 
 # Create your models here.
 
@@ -69,7 +71,51 @@ class Patients(BaseModel):
 
     # def __str__(self):
     #     return f"{self.first_name} {self.last_name}"
-    
+
+class MedicalFolder(BaseModel):
+    medical_history = models.TextField(_("medical_history"), null=True, blank=True)
+    ongoing_treatments = models.TextField(_("ongoing_treatments"), null=True, blank=True)
+    patient = models.OneToOneField(Patients, on_delete=models.CASCADE, related_name="medical_folder")
+    recent_consultations_summary = models.TextField(_("recent_consultations_summary"), null=True, blank=True)
+    lifestyle_and_habits = models.TextField(_("lifestyle_and_habits"), null=True, blank=True)
+    emergency_contact = models.TextField(_("emergency_contact"), null=True, blank=True)
+    medical_folder_password = models.CharField(_("medical_folder_password"), max_length=6, null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        if self.medical_folder_password:
+            self.medical_folder_password = enc_decrypt_permutation(self.medical_folder_password)
+        super().save(*args, **kwargs)
+
+    class Meta:
+        """
+        the place to configure de class or entities
+        """
+        verbose_name = _("MedicalFolder")
+        verbose_name_plural = _("MedicalFolders")
+        ordering = ("-created_at",)
+
+class Document(BaseModel):
+    document_name = models.CharField(_("document_name"), max_length=255, null=True, blank=True)
+    document = models.FileField(_("document"), upload_to="documents/%Y/%m/%D/")
+    medical_folder = models.ForeignKey(MedicalFolder, on_delete=models.CASCADE, related_name="documents", null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        if self.document.size > 30 * 1024 * 1024:
+            raise Exception("Document size exceeds 30 MB.")
+        if not self.document.name.endswith('.pdf'):
+            raise Exception("Document must be a PDF.")
+        file_name, file_extension = self.document.name.rsplit('.', 1)
+        self.document_name = f"{file_name.replace(' ','_')}_{uuid.uuid4().hex[:8]}.{file_extension}"
+        super().save(*args, **kwargs)
+
+    class Meta:
+        """
+        the place to configure de class or entities
+        """
+        verbose_name = _("Document")
+        verbose_name_plural = _("Documents")
+        ordering = ("-created_at",)
+
 class Speciality(BaseModel):
     name = models.CharField(_("name"), max_length=200)
     description = models.TextField(_("description"))
@@ -88,7 +134,8 @@ class Staffs(BaseModel):
                                    related_name="staffs",
                                    null=True)
     title = models.CharField(_("title"), max_length=10, choices=pro_title, default="Dr")
-
+    professional_card = models.FileField(_("professional_card"), upload_to="professional_cards/%Y/%m/%D/", null=True, blank=True)
+    diploma = models.FileField(_("diploma"), upload_to="diplomas/%Y/%m/%D/", null=True, blank=True)
 
     class Meta:
         """
@@ -100,8 +147,22 @@ class Staffs(BaseModel):
 
 
 class TimeSlots(BaseModel):
-    start_time = models.DateTimeField(_("start_time"))
-    end_time = models.DateTimeField(_("end_time"))
+    days_of_week = (
+        ("MONDAY", "MONDAY"),
+        ("TUESDAY", "TUESDAY"),
+        ("WEDNESDAY", "WEDNESDAY"),
+        ("THURSDAY", "THURSDAY"),
+        ("FRIDAY", "FRIDAY"),
+        ("SATURDAY", "SATURDAY"),
+        ("SUNDAY", "SUNDAY"),
+        ("HOLIDAYS", "HOLIDAYS")
+        
+    )
+    start_time = models.DateTimeField(_("start_time"), null=True, blank=True)
+    end_time = models.DateTimeField(_("end_time"), null=True, blank=True)
+    open_time = models.TimeField(_("open_time"), null=True, blank=True)
+    close_time = models.TimeField(_("close_time"), null=True, blank=True)
+    day_of_week = models.CharField(_("day_of_week"), max_length=20, choices=days_of_week, null=True, blank=True)
     staff = models.ForeignKey(Staffs, on_delete=models.CASCADE, related_name="time_slots")
     is_available = models.BooleanField(_("is_available"), default=True)
 

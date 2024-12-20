@@ -36,9 +36,11 @@ def send_appoint_notification(appointment, template, phone_number, sender_name="
         appointment_date = appointment.appointment_date.strftime("%d-%m-%Y")
         appointment_time = appointment.appointment_date.strftime("%H:%M")
         patient_profile = appointment.patient.user.profile
+        parent_profile = appointment.patient.patient_parent.user.profile if appointment.patient.patient_parent else None
         message = render_to_string(template, {'staff_profile': staff_profile,
                                             'appointment_date': appointment_date,
                                             'patient_profile': patient_profile,
+                                            'parent_profile': parent_profile,
                                             'appointment_time': appointment_time,
                                             'title': appointment.staff.title,
                                             'sender_id': SMS_API_USER_ID

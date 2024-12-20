@@ -38,3 +38,44 @@ def get_user_email(first_name, last_name):
     user_email = f'{last_name}.{first_name}{num}@mopital.com'
 
     return user_email
+
+
+def permutation(mpi, last, new):
+    """
+    This function swaps the values of two elements in a list at specified indices.
+    
+    :param mpi: The list in which elements are to be swapped.
+    :param last: The index of the first element to be swapped.
+    :param new: The index of the second element to be swapped.
+    """
+    last_tab = mpi[last]
+    mpi[last] = mpi[new]
+    mpi[new] = last_tab
+
+def enc_decrypt_permutation(phrase):
+    """
+    Encrypts a phrase of maximum 6 characters by permuting its characters two by two using the permutation function.
+    
+    :param phrase: The phrase to be encrypted.
+    :return: The encrypted phrase.
+    """
+    if len(phrase) > 6:
+        raise ValueError("Phrase cannot be more than 6 characters.")
+    encrypted_phrase = list(phrase)
+    for i in range(0, len(phrase) - 1, 2):
+        permutation(encrypted_phrase, i, i + 1)
+    return "".join(encrypted_phrase)
+
+# def decrypt_permutation(phrase):
+#     """
+#     Decrypts a phrase that was encrypted using the encrypt_permutation function.
+    
+#     :param phrase: The encrypted phrase to be decrypted.
+#     :return: The decrypted phrase.
+#     """
+#     if len(phrase) > 6:
+#         raise ValueError("Phrase cannot be more than 6 characters.")
+#     decrypted_phrase = list(phrase)
+#     for i in range(len(phrase) - 1, 0, -2):
+#         permutation(decrypted_phrase, i, i - 1)
+#     return "".join(decrypted_phrase)

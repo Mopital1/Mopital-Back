@@ -1,5 +1,5 @@
 
-from mopito_project.appointments.models import Appointment, Consultation, Notification, Review
+from mopito_project.appointments.models import Appointment, Consultation, Notification, Review, Advertise
 from mopito_project.core.api.serializers import BaseSerializer
 from mopito_project.actors.api.serializers import PatientDetailSerializer, StaffDetailSerializer
 from rest_framework import serializers
@@ -64,7 +64,11 @@ class AppointmentSerializer(BaseSerializer):
         try:
             appointment = Appointment.objects.create(**validated_data)
             # envoyer une notification au patient
-            send_appoint_notification(appointment, 'sms/patient_appoint_confirmation.txt', user.profile.phone_number)
+            if appointment.patient.patient_parent:
+                # parent_appoint_confirmation.txt
+                send_appoint_notification(appointment, 'sms/parent_appoint_confirmation.txt', user.profile.phone_number)
+            else:
+                send_appoint_notification(appointment, 'sms/patient_appoint_confirmation.txt', user.profile.phone_number)
             return appointment
         except Exception as e:
             raise serializers.ValidationError(f"Erreur lors de la création du rendez-vous : {e}")
@@ -224,6 +228,21 @@ class ConsultationDetailSerializer(BaseSerializer):
             "result",
             "antecedent",
             "appointment",
+            "created_at",
+            "updated_at",
+        )
+        read_only_fields = ("id", "created_at", "updated_at",)
+
+class AdvertiseSerializer(BaseSerializer):
+    class Meta:
+        model = Advertise
+        fields = (
+            "id",
+            "title",
+            "advertise_image",
+            "content",
+            "redirect_link",
+            "redirect_link_text",
             "created_at",
             "updated_at",
         )

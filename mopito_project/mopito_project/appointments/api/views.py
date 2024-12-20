@@ -1,6 +1,6 @@
 from django.shortcuts import render
 
-from mopito_project.appointments.models import Appointment, Consultation, Notification, Review
+from mopito_project.appointments.models import Appointment, Consultation, Notification, Review, Advertise   
 from rest_framework import filters, mixins, status
 from django.db.models import Q
 
@@ -9,7 +9,15 @@ from rest_framework.parsers import FormParser, MultiPartParser, JSONParser
 from django_filters.rest_framework import DjangoFilterBackend
 
 from mopito_project.core.api.views import BaseModelViewSet
-from mopito_project.appointments.api.serializers import AppointmentDetailSerializer, AppointmentSerializer, ConsultationSerializer, NotificationDetailSerializer, NotificationSerializer, UpdateAppointmentSerializer
+from mopito_project.appointments.api.serializers import (
+    AppointmentDetailSerializer, 
+    AppointmentSerializer, 
+    ConsultationSerializer, 
+    NotificationDetailSerializer, 
+    NotificationSerializer, 
+    UpdateAppointmentSerializer, 
+    AdvertiseSerializer
+)
 
 # Create your views here.
 
@@ -33,7 +41,7 @@ class AppointmentViewSet(BaseModelViewSet, mixins.ListModelMixin,
         "created_at": ['gte', 'lte', 'exact', 'gt', 'lt'],
     
     }
-    search_fields = ["patient__user__profile__first_name", "staff__user__profile__first_name"]
+    search_fields = ["staff__user__profile__first_name", "appointment_date", "appointment_date__time"]
     ordering_fields = ["updated_at", "created_at", "patient"]
     order = ["-updated_at", "-created_at", "patient"]
     ordering = ["-updated_at", "-created_at", "patient"]
@@ -121,3 +129,16 @@ class NotificationViewSet(BaseModelViewSet, mixins.ListModelMixin,
         if self.action == "list" or self.action == "retrieve":
             return NotificationDetailSerializer
         return NotificationSerializer
+
+class AdvertiseViewSet(BaseModelViewSet, mixins.ListModelMixin,
+                             mixins.RetrieveModelMixin,
+                             mixins.UpdateModelMixin,
+                             mixins.CreateModelMixin,):
+    queryset = Advertise.objects.filter(is_active=True)
+    serializer_class = AdvertiseSerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ["title", "content"]
+    ordering_fields = ["updated_at", "created_at"]
+    order = ["-updated_at", "-created_at"]
+    ordering = ["-updated_at", "-created_at"]
+    parser_classes = [FormParser, MultiPartParser, JSONParser]

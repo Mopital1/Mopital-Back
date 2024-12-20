@@ -1,6 +1,6 @@
 Bonjour {{patient_profile.first_name}},
 
-Votre rendez-vous a été confirmé pour le {{appointment_date}} à {{appointment_time}} avec le {{title}}. {{staff_profile.last_name}}.
+Votre rendez-vous a été confirmé pour le {{appointment_date}} à {{appointment_time}} avec {{title}}. {{staff_profile.last_name}}.
 
 Merci de vous présenter à l'heure prévue.
 

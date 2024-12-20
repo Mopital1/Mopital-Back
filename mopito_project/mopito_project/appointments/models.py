@@ -100,16 +100,22 @@ class Notification(BaseModel):
     # def get_absolute_url(self):
     #     return reverse("Notification_detail", kwargs={"pk": self.pk})
 
-# class Advertise(BaseModel):
-#     """Model definition for Advertise."""
-#     advertise_date = models.DateTimeField(_("advertise_date"), null=True, blank=True)
-#     content = models.TextField(_("content"), null=True, blank=True)
+class Advertise(BaseModel):
+    """Model definition for Advertise."""
+    # advertise_date = models.DateTimeField(_("advertise_date"), null=True, blank=True)
+    title = models.CharField(_("title"), max_length=255, null=True, blank=True)
+    advertise_image = models.FileField(_("advertise_image"), upload_to="advertise_images/%Y/%m/%D/", null=True, blank=True)
+    content = models.TextField(_("content"), null=True, blank=True)
+    redirect_link = models.CharField(_("redirect_link"), max_length=255, null=True, blank=True)
+    redirect_link_text = models.CharField(_("redirect_link_text"), max_length=255, null=True, blank=True)
+
+
     
-#     class Meta:
-#         """Meta definition for Advertise."""
-#         verbose_name = _("Advertise")
-#         verbose_name_plural = _("Advertises")
-#         ordering = ("created_at",)
+    class Meta:
+        """Meta definition for Advertise."""
+        verbose_name = _("Advertise")
+        verbose_name_plural = _("Advertises")
+        ordering = ("created_at",)
 
     # def __str__(self):
     #     """Unicode representation of Advertise."""
