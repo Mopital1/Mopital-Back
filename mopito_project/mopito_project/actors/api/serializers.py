@@ -266,9 +266,34 @@ class StaffSerializer(BaseSerializer):
             "updated_at"
         )
 
+class TimeSlotSerializer(BaseSerializer):
+    class Meta:
+        model = TimeSlots
+        fields = (
+            "id",
+            "day_of_week",
+            # "start_time",
+            # "end_time",
+            "open_time",
+            "close_time",
+            "staff",
+            "is_available",
+            "created_at",
+            "updated_at"
+        )
+        read_only_fields = ("id", "created_at", "updated_at",)
+
+    # def create(self, validated_data):
+    #     user = self.context['request'].user
+    #     if user.user_typ == "STAFF":
+    #         validated_data["staff"] = user.staff
+    #     timeslot = TimeSlots.objects.create(**validated_data)
+    #     return timeslot
+
 class StaffDetailSerializer(BaseSerializer):
     user = UserProfileSerializer()
     speciality = SpecialitySerializer()
+    time_slots = TimeSlotSerializer(many=True)
     class Meta:
         model = Staffs
         fields = (
@@ -278,6 +303,7 @@ class StaffDetailSerializer(BaseSerializer):
             "professional_card",
             "diploma",
             "speciality",
+            "time_slots",
             "user",
             "created_at",
             "updated_at",
