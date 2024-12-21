@@ -348,8 +348,10 @@ class PricingSerializer(BaseSerializer):
 class StaffDetailSerializer(BaseSerializer):
     user = UserProfileSerializer()
     speciality = SpecialitySerializer()
-    time_slots = TimeSlotSerializer(many=True)
-    staff_paths = StaffPathSerializer(many=True)
+    # time_slots = TimeSlotSerializer(many=True)
+    time_slots = serializers.SerializerMethodField()
+    # staff_paths = StaffPathSerializer(many=True)
+    staff_paths = serializers.SerializerMethodField()
     staff_pricing = PricingSerializer(many=True)
     payment_methods = PaymentMethodSerializer(many=True)
     class Meta:
@@ -372,6 +374,33 @@ class StaffDetailSerializer(BaseSerializer):
             )
         # extra_kwargs = {"password": {"write_only": True}}
 
+    def get_time_slots(self, obj):
+        time_slots = TimeSlots.objects.filter(staff=obj)
+        time_slots_dict = {}
+        for time_slot in time_slots:
+            if time_slot.day_of_week not in time_slots_dict:
+                time_slots_dict[time_slot.day_of_week] = []
+            time_slots_dict[time_slot.day_of_week].append({
+                "open_time": time_slot.open_time,
+                "close_time": time_slot.close_time,
+                "is_available": time_slot.is_available
+            })
+        return time_slots_dict
+    
+    def get_staff_paths(self, obj):
+        staff_paths = StaffPath.objects.filter(staff=obj)
+        staff_paths_dict = {}
+        for staff_path in staff_paths:
+            if staff_path.path_type not in staff_paths_dict:
+                staff_paths_dict[staff_path.path_type] = []
+            staff_paths_dict[staff_path.path_type].append({
+                "description": staff_path.description,
+                "start_year": staff_path.start_year,
+                "end_year": staff_path.end_year,
+                "is_active": staff_path.is_active
+            })
+        return staff_paths_dict
+    
 class TimeSlotSerializer(BaseSerializer):
     class Meta:
         model = TimeSlots
