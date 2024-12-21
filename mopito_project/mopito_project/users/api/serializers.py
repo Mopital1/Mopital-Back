@@ -321,6 +321,7 @@ class UserDetailSerializer(BaseSerializer):
     groups = GroupDetailSerializer(many=True)
     user_permissions = PermissionSerializer(many=True)
     permissions = serializers.SerializerMethodField()
+    profile = ProfileSerializer()
 
     class Meta:
         model = User
@@ -329,6 +330,7 @@ class UserDetailSerializer(BaseSerializer):
             "is_active",
             "email",
             "user_typ",
+            "profile",
             "patient",
             "staff",
             "password",

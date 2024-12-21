@@ -72,12 +72,12 @@ class MedicalFolderViewSet(BaseModelViewSet, mixins.ListModelMixin,
     ordering = ["-updated_at", "-created_at"]
     parser_classes = [FormParser, MultiPartParser, JSONParser]
 
-    def get_queryset(self):
-        user = self.request.user
-        # send_otp_to_user(repeat=86400)
-        if user.user_typ == "PATIENT":
-            return MedicalFolder.objects.filter(patient=user.patient)
-        return MedicalFolder.objects.filter(is_active=True)
+    # def get_queryset(self):
+    #     user = self.request.user
+    #     # send_otp_to_user(repeat=86400)
+    #     if user.user_typ == "PATIENT":
+    #         return MedicalFolder.objects.filter(patient=user.patient)
+    #     return MedicalFolder.objects.filter(is_active=True)
 
     def get_serializer_class(self):
         if self.action == "list" or self.action == "retrieve":
