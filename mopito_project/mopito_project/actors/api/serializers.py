@@ -352,8 +352,10 @@ class StaffDetailSerializer(BaseSerializer):
     time_slots = serializers.SerializerMethodField()
     # staff_paths = StaffPathSerializer(many=True)
     staff_paths = serializers.SerializerMethodField()
-    staff_pricing = PricingSerializer(many=True)
-    payment_methods = PaymentMethodSerializer(many=True)
+    # staff_pricing = PricingSerializer(many=True)
+    staff_pricing = serializers.SerializerMethodField()
+    # payment_methods = PaymentMethodSerializer(many=True)
+    payment_methods = serializers.SerializerMethodField()
     class Meta:
         model = Staffs
         fields = (
@@ -400,6 +402,30 @@ class StaffDetailSerializer(BaseSerializer):
                 "is_active": staff_path.is_active
             })
         return staff_paths_dict
+    
+    def get_staff_pricing(self, obj):
+        staff_pricing = Pricing.objects.filter(staff=obj)
+        staff_pricing_dict = {}
+        for pricing in staff_pricing:
+            if pricing.pricing_type not in staff_pricing_dict:
+                staff_pricing_dict[pricing.pricing_type] = []
+            staff_pricing_dict[pricing.pricing_type].append({
+                "amount": pricing.amount,
+                "is_active": pricing.is_active
+            })
+        return staff_pricing_dict
+    
+    def get_payment_methods(self, obj):
+        payment_methods = PaymentMethod.objects.filter(staff=obj)
+        payment_methods_dict = {}
+        for payment_method in payment_methods:
+            if payment_method.payment_type not in payment_methods_dict:
+                payment_methods_dict[payment_method.payment_type] = []
+            payment_methods_dict[payment_method.payment_type].append({
+                "phone_number": payment_method.phone_number,
+                "is_active": payment_method.is_active
+            })
+        return payment_methods_dict
     
 class TimeSlotSerializer(BaseSerializer):
     class Meta:
