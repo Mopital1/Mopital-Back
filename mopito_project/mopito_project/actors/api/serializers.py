@@ -119,6 +119,7 @@ class UpdatePatientSerializer(BaseSerializer):
     gender = serializers.CharField(required=False)
     first_name = serializers.CharField(required=False)
     last_name = serializers.CharField(required=False)
+    medical_folder_password = serializers.CharField(required=False)
     class Meta:
         model = Patients
         fields = (
@@ -131,6 +132,7 @@ class UpdatePatientSerializer(BaseSerializer):
             "gender",
             "first_name",
             "last_name",
+            "medical_folder_password",
             # "patient_parent",
             # "parent_relation_typ",
             "created_at",
@@ -145,12 +147,14 @@ class UpdatePatientSerializer(BaseSerializer):
             instance.blood_group = validated_data.get("blood_group", instance.blood_group)
             instance.rhesus_factor = validated_data.get("rhesus_factor", instance.rhesus_factor)
             instance.hemoglobin = validated_data.get("hemoglobin", instance.hemoglobin)
-            # instance.patient_parent = validated_data.get("patient_parent", instance.patient_parent)
-            # instance.parent_relation_typ = validated_data.get("parent_relation_typ", instance.parent_relation_typ)
+            medical_folder_password = validated_data.get("medical_folder_password", instance.medical_folder.medical_folder_password)
+            if medical_folder_password:
+                instance.medical_folder.medical_folder_password = enc_decrypt_permutation(medical_folder_password)
             instance.user.profile.gender = validated_data.get("gender", instance.user.profile.gender)
             instance.user.profile.first_name = validated_data.get("first_name", instance.user.profile.first_name)
             instance.user.profile.last_name = validated_data.get("last_name", instance.user.profile.last_name)
             instance.user.profile.save()
+            instance.medical_folder.save()
 
             instance.save()
             return instance
