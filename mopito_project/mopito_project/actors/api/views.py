@@ -95,7 +95,8 @@ class MedicalFolderViewSet(BaseModelViewSet, mixins.ListModelMixin,
         # medical_folder = MedicalFolder.objects.get(id=medical_folder_id)
         medical_folder = self.get_object()
         password = request.data.get('password')
-        if medical_folder.medical_folder_password == enc_decrypt_permutation(password):
+        encrypt_pass = enc_decrypt_permutation(password)
+        if medical_folder.medical_folder_password == encrypt_pass:
             return Response({"msg": "Ok"}, status=status.HTTP_200_OK)
         else:
             return Response({"error": "Password is not correct"}, status=status.HTTP_400_BAD_REQUEST)
@@ -202,13 +203,13 @@ class PatientViewSet(BaseModelViewSet, mixins.ListModelMixin,
     ordering_fields = ["updated_at", "created_at"]
     ordering = ["-updated_at", "-created_at"]
 
-    # def get_queryset(self):
-    #     user = self.request.user
-    #     # send_otp_to_user(repeat=86400)
-    #     if user.user_typ == "PATIENT":
-    #         # return Patients.objects.filter(id=user.patient.id)
-    #         return Patients.objects.filter(patient_parent_id=user.patient.id)
-    #     return Patients.objects.filter(is_active=True)
+    def get_queryset(self):
+        user = self.request.user
+        # send_otp_to_user(repeat=86400)
+        if user.user_typ == "PATIENT":
+            # return Patients.objects.filter(id=user.patient.id)
+            return Patients.objects.filter(patient_parent_id=user.patient.id)
+        return Patients.objects.filter(is_active=True)
 
     def get_serializer_class(self):
         if self.action == "list" or self.action == "retrieve":
