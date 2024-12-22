@@ -202,13 +202,13 @@ class PatientViewSet(BaseModelViewSet, mixins.ListModelMixin,
     ordering_fields = ["updated_at", "created_at"]
     ordering = ["-updated_at", "-created_at"]
 
-    def get_queryset(self):
-        user = self.request.user
-        # send_otp_to_user(repeat=86400)
-        if user.user_typ == "PATIENT":
-            # return Patients.objects.filter(id=user.patient.id)
-            return Patients.objects.filter(patient_parent_id=user.patient.id)
-        return Patients.objects.filter(is_active=True)
+    # def get_queryset(self):
+    #     user = self.request.user
+    #     # send_otp_to_user(repeat=86400)
+    #     if user.user_typ == "PATIENT":
+    #         # return Patients.objects.filter(id=user.patient.id)
+    #         return Patients.objects.filter(patient_parent_id=user.patient.id)
+    #     return Patients.objects.filter(is_active=True)
 
     def get_serializer_class(self):
         if self.action == "list" or self.action == "retrieve":
