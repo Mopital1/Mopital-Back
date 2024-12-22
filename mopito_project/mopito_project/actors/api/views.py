@@ -96,7 +96,7 @@ class MedicalFolderViewSet(BaseModelViewSet, mixins.ListModelMixin,
         medical_folder = self.get_object()
         password = request.data.get('password')
         encrypt_pass = enc_decrypt_permutation(password)
-        if medical_folder.medical_folder_password == encrypt_pass:
+        if not medical_folder.medical_folder_password == encrypt_pass:
             return Response({"msg": "Ok"}, status=status.HTTP_200_OK)
         else:
             return Response({"error": "Password is not correct"}, status=status.HTTP_400_BAD_REQUEST)
