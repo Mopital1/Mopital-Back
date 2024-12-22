@@ -139,20 +139,23 @@ class UpdatePatientSerializer(BaseSerializer):
         read_only_fields = ("id", "created_at", "updated_at",)
     
     def update(self, instance, validated_data):
-        instance.height = validated_data.get("height", instance.height)
-        instance.weight = validated_data.get("weight", instance.weight)
-        instance.blood_group = validated_data.get("blood_group", instance.blood_group)
-        instance.rhesus_factor = validated_data.get("rhesus_factor", instance.rhesus_factor)
-        instance.hemoglobin = validated_data.get("hemoglobin", instance.hemoglobin)
-        # instance.patient_parent = validated_data.get("patient_parent", instance.patient_parent)
-        # instance.parent_relation_typ = validated_data.get("parent_relation_typ", instance.parent_relation_typ)
-        instance.user.profile.gender = validated_data.get("gender", instance.user.profile.gender)
-        instance.user.profile.first_name = validated_data.get("first_name", instance.user.profile.first_name)
-        instance.user.profile.last_name = validated_data.get("last_name", instance.user.profile.last_name)
-        instance.user.profile.save()
+        try:
+            instance.height = validated_data.get("height", instance.height)
+            instance.weight = validated_data.get("weight", instance.weight)
+            instance.blood_group = validated_data.get("blood_group", instance.blood_group)
+            instance.rhesus_factor = validated_data.get("rhesus_factor", instance.rhesus_factor)
+            instance.hemoglobin = validated_data.get("hemoglobin", instance.hemoglobin)
+            # instance.patient_parent = validated_data.get("patient_parent", instance.patient_parent)
+            # instance.parent_relation_typ = validated_data.get("parent_relation_typ", instance.parent_relation_typ)
+            instance.user.profile.gender = validated_data.get("gender", instance.user.profile.gender)
+            instance.user.profile.first_name = validated_data.get("first_name", instance.user.profile.first_name)
+            instance.user.profile.last_name = validated_data.get("last_name", instance.user.profile.last_name)
+            instance.user.profile.save()
 
-        instance.save()
-        return instance
+            instance.save()
+            return instance
+        except Exception as e:
+            raise serializers.ValidationError(f"Erreur lors de la mise à jour du patient : {e}")
     
 class NearPatientSerializer(BaseSerializer):
     email = serializers.EmailField()
