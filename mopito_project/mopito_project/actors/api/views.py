@@ -46,7 +46,7 @@ from actors.api.serializers import (
     PaymentMethodSerializer
 )
 
-from mopito_project.utils.functionUtils import get_user_email, remove_special_characters
+from mopito_project.utils.functionUtils import get_user_email, remove_special_characters, enc_decrypt_permutation
 from mopito_project.utils.sendsms import phoneNumberGenerator
 from mopito_project.users.api.serializers import CompleteProfileSerializer, CreateProfileSerializer, ProfileSerializer
 from mopito_project.users.models import Profile, User
@@ -83,7 +83,22 @@ class MedicalFolderViewSet(BaseModelViewSet, mixins.ListModelMixin,
         if self.action == "list" or self.action == "retrieve":
             return MedicalFolderDetailSerializer
         return MedicalFolderSerializer
-    
+    """
+     @action(detail=False, methods=["post"])
+    def add_near_patient(self, request, *args, **kwargs):
+    """
+    @action(detail=True, methods=["post"])
+    def verify_medical_folder_password(self, request, *args, **kwargs):
+        """
+        Verify if the provided password for the medical folder is correct or not.
+        """
+        # medical_folder = MedicalFolder.objects.get(id=medical_folder_id)
+        medical_folder = self.get_object()
+        password = request.data.get('password')
+        if medical_folder.password == enc_decrypt_permutation(password):
+            return Response({"msg": "Ok"}, status=status.HTTP_200_OK)
+        else:
+            return Response({"error": "Password is not correct"}, status=status.HTTP_400_BAD_REQUEST)
 class StaffPathViewSet(BaseModelViewSet, mixins.ListModelMixin,
                              mixins.RetrieveModelMixin,
                              mixins.UpdateModelMixin,

@@ -92,15 +92,16 @@ class UpdateAppointmentSerializer(BaseSerializer):
 
     def update(self, instance, validated_data):
             current_date = timezone.now()
-            
-            if instance.patient_update_count <= 3:  
+            second_diff = (instance.appointment_date - current_date).total_seconds() / 3600
+            print("temps restant ", second_diff)
+            if second_diff >= 24:  
                 instance.appointment_date = validated_data.get("appointment_date", instance.appointment_date)  
                 instance.description = validated_data.get("description", instance.description)
                 instance.patient = validated_data.get("patient", instance.patient)
                 instance.staff = validated_data.get("staff", instance.staff)
                 instance.status = validated_data.get("status", instance.status)
             else:
-                raise serializers.ValidationError("La date du rendez-vous a été modifiée plus de 3 fois.")
+                raise serializers.ValidationError({"msg" : "Le rendez vous ne peut plus être modifié à moins de 24heures"})
             
             if "appointment_date" in validated_data:
                     appointment_date = validated_data.get("appointment_date")

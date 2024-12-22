@@ -1,15 +1,15 @@
-Bonjour {{title}}. {{staff_profile.last_name}},
-
-Un rendez-vous vous est demandé avec {{appointment.patient_profile.first_name}} a demandé un rendez-vous pour le {{appointment_date}} à {{appointment_time}}.
-
-Merci.
-
----
-
 Hello {{staff_profile.first_name}},
 
 An appointment is requested with {{appointment.patient_profile.first_name}} for {{appointment_date}} at {{appointment_time}}.
 
 Thank you.
+
+---
+
+Bonjour {{title}}. {{staff_profile.last_name}},
+
+Un rendez-vous vous est demandé avec {{appointment.patient_profile.first_name}} a demandé un rendez-vous pour le {{appointment_date}} à {{appointment_time}}.
+
+Merci.
 
 {{sender_id}}

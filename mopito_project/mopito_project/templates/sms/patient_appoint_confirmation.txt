@@ -1,11 +1,3 @@
-Bonjour {{patient_profile.first_name}},
-
-Votre rendez-vous a été confirmé pour le {{appointment_date}} à {{appointment_time}} avec {{title}}. {{staff_profile.last_name}}.
-
-Merci de vous présenter à l'heure prévue.
-
----
-
 Hello {{patient_profile.first_name}},
 
 Your appointment has been confirmed for {{appointment_date}} at {{appointment_time}} with {{title}}. {{staff_profile.last_name}}.
@@ -13,5 +5,14 @@ Your appointment has been confirmed for {{appointment_date}} at {{appointment_ti
 Please make sure to arrive on time.
 
 Thank you.
+
+---
+
+Bonjour {{patient_profile.first_name}},
+
+Votre rendez-vous a été confirmé pour le {{appointment_date}} à {{appointment_time}} avec {{title}}. {{staff_profile.last_name}}.
+
+Merci de vous présenter à l'heure prévue.
+
 
 {{sender_id}}

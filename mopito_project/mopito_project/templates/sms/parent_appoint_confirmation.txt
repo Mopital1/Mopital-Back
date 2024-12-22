@@ -1,23 +1,17 @@
-Bonjour {{parent_profile.first_name}},
-
-
-Le rendez-vous de votre proche {{patient_profile.first_name}} a été confirmé pour le {{appointment_date}} à {{appointment_time}} avec {{title}}. {{staff_profile.last_name}}.
-
-Merci de vous assurer qu'il/elle se présente à l'heure prévue.
-
-
----
-
-
 Hello {{parent_profile.first_name}},
 
-
 Your child's appointment has been confirmed for {{appointment_date}} at {{appointment_time}} with {{title}}. {{staff_profile.last_name}}.
-
 
 Please ensure that he/she arrives on time.
 
 Thank you.
 
+---
+
+Bonjour {{parent_profile.first_name}},
+
+Le rendez-vous de votre proche {{patient_profile.first_name}} a été confirmé pour le {{appointment_date}} à {{appointment_time}} avec {{title}}. {{staff_profile.last_name}}.
+
+Merci de vous assurer qu'il/elle se présente à l'heure prévue.
 
 {{sender_id}}
