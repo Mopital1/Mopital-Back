@@ -185,7 +185,7 @@ class PatientViewSet(BaseModelViewSet, mixins.ListModelMixin,
                              mixins.CreateModelMixin,):
     queryset = Patients.objects.filter(is_active=True)
     serializer_class = PatientSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = {
         "user__id": ['exact'],
