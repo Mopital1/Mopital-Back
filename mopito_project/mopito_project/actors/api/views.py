@@ -6,7 +6,7 @@ from rest_framework.decorators import action, permission_classes
 from rest_framework.response import Response
 from rest_framework import filters, mixins, status
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import Q, Case, When, Value, IntegerField
 from rest_framework.parsers import FormParser, MultiPartParser, JSONParser  
 from mopito_project.core.api.views import BaseModelViewSet
 from mopito_project.actors.models import (
@@ -229,12 +229,12 @@ class PatientViewSet(BaseModelViewSet, mixins.ListModelMixin,
         user = self.request.user
         if not serializer.is_valid():
             return Response(status=status.HTTP_400_BAD_REQUEST, data=serializer.errors)
-        email = serializer.validated_data.get("email")
-        gender = serializer.validated_data.get("gender")
-        height = serializer.validated_data.get("height")
-        weight = serializer.validated_data.get("weight")
+        email = serializer.validated_data.get("email", None)
+        gender = serializer.validated_data.get("gender", None)
+        height = serializer.validated_data.get("height", None)
+        weight = serializer.validated_data.get("weight", None)
         dob = serializer.validated_data.get("dob")
-        parent_relation_typ = serializer.validated_data.get("parent_relation_typ")
+        parent_relation_typ = serializer.validated_data.get("parent_relation_typ", None)
         first_name = remove_special_characters(serializer.validated_data.get("first_name")) 
         last_name = remove_special_characters(serializer.validated_data.get("last_name"))
         phone_number = phoneNumberGenerator()
@@ -306,18 +306,19 @@ class StaffViewSet(BaseModelViewSet, mixins.ListModelMixin,
     ordering = ["-updated_at", "-created_at"]
 
     def get_queryset(self):
-        user = self.request.user
-        # send_otp_to_user(repeat=86400)
-        if user.user_typ == "PATIENT":
-            similar_staffs = Staffs.objects.filter(is_active=True)
-            if user.profile.city:
-                similar_staffs = similar_staffs.filter(user__profile__city__icontains=user.profile.city)
-            # similar_staffs = Staffs.objects.filter(
-            #     Q(user__profile__quarter__icontains=user.profile.quarter) |
-            #     Q(user__profile__city__icontains=user.profile.city)
-            # )
-            return similar_staffs
-        return Staffs.objects.filter(is_active=True)
+       user = self.request.user
+       base_queryset = Staffs.objects.filter(is_active=True)
+       if user.user_typ == "PATIENT" and user.profile.city:
+           # Annotate queryset with priority field
+           return base_queryset.annotate(
+               priority=Case(
+                   When(user__profile__city__iexact=user.profile.city, then=Value(1)),
+                   default=Value(2),
+                   output_field=IntegerField(),
+               )
+           ).order_by('priority', '-updated_at')
+       
+       return base_queryset
 
 
     def get_serializer_class(self):

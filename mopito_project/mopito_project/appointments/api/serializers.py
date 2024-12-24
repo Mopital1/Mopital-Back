@@ -90,38 +90,38 @@ class UpdateAppointmentSerializer(BaseSerializer):
         )
         read_only_fields = ("id", "created_at", "updated_at",)
 
-    def update(self, instance, validated_data):
+        def update(self, instance, validated_data):
             current_date = timezone.now()
             second_diff = (instance.appointment_date - current_date).total_seconds() / 3600
-            print("temps restant ", second_diff)
-            if second_diff >= 24:  
-                instance.appointment_date = validated_data.get("appointment_date", instance.appointment_date)  
-                instance.description = validated_data.get("description", instance.description)
-                instance.patient = validated_data.get("patient", instance.patient)
-                instance.staff = validated_data.get("staff", instance.staff)
-                instance.status = validated_data.get("status", instance.status)
-            else:
-                raise serializers.ValidationError({"msg" : "Le rendez vous ne peut plus être modifié à moins de 24heures"})
             
-            if "appointment_date" in validated_data:
-                    appointment_date = validated_data.get("appointment_date")
-                    # Validation de la date de rendez-vous
-                    if appointment_date and appointment_date.tzinfo is None:
-                        appointment_date = timezone.make_aware(appointment_date) 
-                    if appointment_date >= current_date:
-                        instance.patient_update_count += 1
-                    else:
-                        raise serializers.ValidationError("La date du rendez-vous doit être dans le futur.")
+            # Vérification du délai de 24h
+            if second_diff < 24:
+                raise serializers.ValidationError({"msg": "Le rendez vous ne peut plus être modifié à moins de 24heures"})
+                # Mise à jour des champs
+            instance.appointment_date = validated_data.get("appointment_date", instance.appointment_date)
+            instance.description = validated_data.get("description", instance.description)
+            instance.patient = validated_data.get("patient", instance.patient)
+            instance.staff = validated_data.get("staff", instance.staff)
+            instance.status = validated_data.get("status", instance.status)
+                # Incrémentation du compteur si la date est modifiée ou si le statut est "REPORTED"
+            if ("appointment_date" in validated_data or 
+                validated_data.get("status") == "REPORTED"):
                 
-            # Gestion des exceptions lors de la sauvegarde
-            try:
-                instance.save()
-            except Exception as e:
-                raise serializers.ValidationError(f"Erreur lors de la mise à jour du rendez-vous : {e}")
+                appointment_date = validated_data.get("appointment_date", instance.appointment_date)
+                if appointment_date and appointment_date.tzinfo is None:
+                    appointment_date = timezone.make_aware(appointment_date)
+                
+                if appointment_date < current_date:
+                    raise serializers.ValidationError("La date du rendez-vous doit être dans le futur.")
+                    
+                instance.patient_update_count += 1
+                try:
+                    instance.save()
+                except Exception as e:
+                    raise serializers.ValidationError(f"Erreur lors de la mise à jour du rendez-vous : {e}")
+                
+                return instance
             
-            return instance
-            #appointment = Appointment.objects.create(**validated_data)
-
 
 
 class AppointmentDetailSerializer(BaseSerializer):

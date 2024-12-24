@@ -32,6 +32,7 @@ from mopito_project.utils import randomize_digit_char
 from mopito_project.users.models import OTP, Profile, User
 from mopito_project.actors.models import Patients, Staffs, Speciality
 from mopito_project.actors.models import Countries
+from mopito_project.actors.api.serializers import PatientDetailSerializer
 
 # from ..models import User, VisibilityGroup
 # from ...h_centers.api.serializers import HUniteSerializers
@@ -322,6 +323,7 @@ class UserDetailSerializer(BaseSerializer):
     user_permissions = PermissionSerializer(many=True)
     permissions = serializers.SerializerMethodField()
     profile = ProfileSerializer()
+    patient = PatientDetailSerializer()
 
     class Meta:
         model = User
