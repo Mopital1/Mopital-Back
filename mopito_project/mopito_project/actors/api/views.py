@@ -222,6 +222,42 @@ class PatientViewSet(BaseModelViewSet, mixins.ListModelMixin,
             return NearPatientSerializer
         return PatientSerializer
     
+    def update(self, request, *args, **kwargs):
+        try:
+            instance = self.get_object()
+            serializer = self.get_serializer(instance, data=request.data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            
+            with transaction.atomic():  # Ajout d'une transaction atomique
+                # Mise à jour des champs du patient
+                validated_data = serializer.validated_data
+                patient_fields = ['height', 'weight', 'blood_group', 'rhesus_factor', 'hemoglobin']
+                for field in patient_fields:
+                    setattr(instance, field, validated_data.get(field, getattr(instance, field)))
+
+                # Mise à jour du medical folder password
+                medical_folder_password = validated_data.get("medical_folder_password")
+                if medical_folder_password and hasattr(instance, 'medical_folder') and instance.medical_folder:
+                    instance.medical_folder.medical_folder_password = enc_decrypt_permutation(medical_folder_password)
+                    instance.medical_folder.save()
+
+                # Mise à jour du profil utilisateur
+                if hasattr(instance, 'user') and hasattr(instance.user, 'profile'):
+                    profile = instance.user.profile
+                    profile_fields = ['gender', 'first_name', 'last_name']
+                    for field in profile_fields:
+                        setattr(profile, field, validated_data.get(field, getattr(profile, field)))
+                    profile.save()
+
+                instance.save()
+            
+            return Response(serializer.data)
+            
+        except Exception as e:
+                return Response(
+                    {"detail": f"Erreur lors de la mise à jour du patient : {str(e)}"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
     
     @action(detail=False, methods=["post"])
     def add_near_patient(self, request, *args, **kwargs):
