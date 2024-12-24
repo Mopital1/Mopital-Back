@@ -225,6 +225,12 @@ class PatientViewSet(BaseModelViewSet, mixins.ListModelMixin,
     def update(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
+            instance = self.get_object()
+            if not instance:
+                return Response(
+                    {"detail": "Patient non trouvé"},
+                    status=status.HTTP_404_NOT_FOUND
+                )
             serializer = self.get_serializer(instance, data=request.data, partial=True)
             serializer.is_valid(raise_exception=True)
             
@@ -252,7 +258,13 @@ class PatientViewSet(BaseModelViewSet, mixins.ListModelMixin,
                 instance.save()
             
             return Response(serializer.data)
-            
+
+        except Patients.DoesNotExist:
+            return Response(
+                {"detail": "Patient non trouvé"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
         except Exception as e:
                 return Response(
                     {"detail": f"Erreur lors de la mise à jour du patient : {str(e)}"},
