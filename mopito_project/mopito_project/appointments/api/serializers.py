@@ -104,7 +104,7 @@ class UpdateAppointmentSerializer(BaseSerializer):
             instance.staff = validated_data.get("staff", instance.staff)
             instance.status = validated_data.get("status", instance.status)
                 # Incrémentation du compteur si la date est modifiée ou si le statut est "REPORTED"
-            if ("appointment_date" in validated_data or 
+            if (validated_data.get("appointment_date") or 
                 validated_data.get("status") == "REPORTED"):
                 
                 appointment_date = validated_data.get("appointment_date", instance.appointment_date)
@@ -113,14 +113,14 @@ class UpdateAppointmentSerializer(BaseSerializer):
                 
                 if appointment_date < current_date:
                     raise serializers.ValidationError("La date du rendez-vous doit être dans le futur.")
-                    
+                instance.status = validated_data.get("status", "REPORTED")
                 instance.patient_update_count += 1
-                try:
-                    instance.save()
-                except Exception as e:
-                    raise serializers.ValidationError(f"Erreur lors de la mise à jour du rendez-vous : {e}")
-                
-                return instance
+            try:
+                instance.save()
+            except Exception as e:
+                raise serializers.ValidationError(f"Erreur lors de la mise à jour du rendez-vous : {e}")
+            
+            return instance
             
 
 
