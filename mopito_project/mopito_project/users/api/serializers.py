@@ -32,7 +32,7 @@ from mopito_project.utils import randomize_digit_char
 from mopito_project.users.models import OTP, Profile, User
 from mopito_project.actors.models import Patients, Staffs, Speciality
 from mopito_project.actors.models import Countries
-from mopito_project.actors.api.serializers import PatientDetailSerializer
+# from mopito_project.actors.api.serializers import PatientDetailSerializer
 
 # from ..models import User, VisibilityGroup
 # from ...h_centers.api.serializers import HUniteSerializers
@@ -318,12 +318,39 @@ class UpdateUserSerializer(BaseSerializer):
         )
         extra_kwargs = {"password": {"write_only": True}}
 
+class PatientPrintSerializer(BaseSerializer):
+    # profile = ProfileSerializer(source="user.profile")
+    # user = UserProfileSerializer()
+    # children = serializers.SerializerMethodField(read_only=True)
+    #medical_folder = MedicalFolderDetailSerializer()
+    # children = UserProfileSerializer(many=True)
+    # patient_parent = UserProfileSerializer(source="patient_parent.user", read_only=True)
+    class Meta:
+        model = Patients
+        fields = (
+            "id",
+            # "profile",
+            "height",
+            "weight",
+            "rhesus_factor",
+            "blood_group",
+            "hemoglobin",
+            "parent_relation_typ",
+            "medical_folder",
+            # "patient_parent",
+            # "children",
+            # "user",
+            "created_at",
+            "updated_at",
+        )
+    read_only_fields = ("id", "created_at", "updated_at",)
+
 class UserDetailSerializer(BaseSerializer):
     groups = GroupDetailSerializer(many=True)
     user_permissions = PermissionSerializer(many=True)
     permissions = serializers.SerializerMethodField()
     profile = ProfileSerializer()
-    patient = PatientDetailSerializer()
+    patient = PatientPrintSerializer()
 
     class Meta:
         model = User
