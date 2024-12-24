@@ -84,6 +84,8 @@ class MedicalFolder(BaseModel):
     def save(self, *args, **kwargs):
         if self.medical_folder_password:
             self.medical_folder_password = enc_decrypt_permutation(self.medical_folder_password)
+        else:
+            self.medical_folder_password = enc_decrypt_permutation("1234")
         super().save(*args, **kwargs)
 
     class Meta:

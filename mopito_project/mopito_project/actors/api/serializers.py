@@ -147,14 +147,15 @@ class UpdatePatientSerializer(BaseSerializer):
             instance.blood_group = validated_data.get("blood_group", instance.blood_group)
             instance.rhesus_factor = validated_data.get("rhesus_factor", instance.rhesus_factor)
             instance.hemoglobin = validated_data.get("hemoglobin", instance.hemoglobin)
-            medical_folder_password = validated_data.get("medical_folder_password", instance.medical_folder.medical_folder_password)
-            if medical_folder_password:
+            medical_folder_password = validated_data.get("medical_folder_password")
+            if medical_folder_password is not None and hasattr(instance, 'medical_folder') and instance.medical_folder:
                 instance.medical_folder.medical_folder_password = enc_decrypt_permutation(medical_folder_password)
+                instance.medical_folder.save()
             instance.user.profile.gender = validated_data.get("gender", instance.user.profile.gender)
             instance.user.profile.first_name = validated_data.get("first_name", instance.user.profile.first_name)
             instance.user.profile.last_name = validated_data.get("last_name", instance.user.profile.last_name)
             instance.user.profile.save()
-            instance.medical_folder.save()
+            #instance.medical_folder.save()
 
             instance.save()
             return instance
