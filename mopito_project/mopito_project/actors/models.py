@@ -101,14 +101,14 @@ class Document(BaseModel):
     document = models.FileField(_("document"), upload_to="documents/%Y/%m/%D/")
     medical_folder = models.ForeignKey(MedicalFolder, on_delete=models.CASCADE, related_name="documents", null=True, blank=True)
 
-    def save(self, *args, **kwargs):
-        if self.document.size > 30 * 1024 * 1024:
-            raise Exception("Document size exceeds 30 MB.")
-        if not self.document.name.endswith('.pdf'):
-            raise Exception("Document must be a PDF.")
-        file_name, file_extension = self.document.name.rsplit('.', 1)
-        self.document_name = f"{file_name.replace(' ','_')}_{uuid.uuid4().hex[:8]}.{file_extension}"
-        super().save(*args, **kwargs)
+    # def save(self, *args, **kwargs):
+    #     if self.document.size > 30 * 1024 * 1024:
+    #         raise Exception("Document size exceeds 30 MB.")
+    #     if not self.document.name.endswith('.pdf'):
+    #         raise Exception("Document must be a PDF.")
+    #     file_name, file_extension = self.document.name.rsplit('.', 1)
+    #     self.document_name = f"{file_name.replace(' ','_')}_{uuid.uuid4().hex[:8]}.{file_extension}"
+    #     super().save(*args, **kwargs)
 
     class Meta:
         """
