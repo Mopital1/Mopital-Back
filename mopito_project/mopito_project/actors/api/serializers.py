@@ -17,7 +17,8 @@ from mopito_project.actors.models import (
 from mopito_project.users.models import Profile, User
 from mopito_project.users.api.serializers import ProfileSerializer, UserSerializer
 from rest_framework import serializers
-from mopito_project.utils.functionUtils import enc_decrypt_permutation
+from mopito_project.utils.functionUtils import enc_decrypt_permutation, remove_special_characters
+import uuid
 
 
 class CreatePatientSerializer(BaseSerializer):
@@ -71,6 +72,11 @@ class UpdateMedicalFolderSerializer(BaseSerializer):
         )
         read_only_fields = ("id", "created_at", "updated_at",)
 
+    def validate_medical_folder_password(self, value):
+        if len(value) > 4:
+            raise serializers.ValidationError("Password must be less than 4 characters")
+        return value
+    
     def update(self, instance, validated_data):
         if "medical_folder_password" in validated_data:
             # Encrypt password before saving
@@ -88,6 +94,32 @@ class DocumentSerializer(BaseSerializer):
             "created_at",
             "updated_at",
         )
+        read_only_fields = ("id", "created_at", "updated_at",)
+
+    def create(self, validated_data):
+        document = validated_data.get("document")
+        document_name = validated_data.get("document_name", None)
+        if document.size > 30 * 1024 * 1024:
+            raise serializers.ValidationError("Document file size should not exceed 10 Mb")
+        if not (document.content_type.startswith('image/') or document.content_type == 'application/pdf'):
+            raise serializers.ValidationError("File must be a PDF, PNG, JPG or JPEG")
+        try:
+            # Gérer le cas où il n'y a pas d'extension
+            file_name, file_extension = document.name.rsplit('.', 1) if '.' in document.name else (document.name, '')
+            
+            if document_name:
+                document_name = remove_special_characters(document_name)
+                document_name = f"{document_name.replace(' ','_')}_{uuid.uuid4().hex[:8]}.{file_extension}"
+            else:
+                document_name = f"{file_name.replace(' ','_')}_{uuid.uuid4().hex[:8]}.{file_extension}"
+                
+            validated_data["document_name"] = document_name
+            validated_data["document"] = document
+            
+        except Exception as e:
+            raise serializers.ValidationError(f"Error processing document name: {str(e)}")
+        
+        return super().create(validated_data)
 
 class MedicalFolderDetailSerializer(BaseSerializer):
     medical_folder_password = serializers.SerializerMethodField()
