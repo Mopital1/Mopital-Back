@@ -352,6 +352,16 @@ SPECTACULAR_SETTINGS = {
     "VERSION": "1.0.0",
     "SERVE_PERMISSIONS": ["rest_framework.permissions.IsAdminUser"],
     "SCHEMA_PATH_PREFIX": "/api/",
+    'COMPONENT_SPLIT_REQUEST': True,
+    # 'SWAGGER_UI_SETTINGS': {
+    #     'deepLinking': True,
+    #     'persistAuthorization': True,
+    #     'displayOperationId': True,
+    # },
+    # 'UPLOADED_FILES_USE_URL': True,
+    # 'PREPROCESSING_HOOKS': [],
+    # 'SERVE_INCLUDE_SCHEMA': False,
+    # 'COMPONENT_NO_READ_ONLY_REQUIRED': True
 }
 # Your stuff...
 # ------------------------------------------------------------------------------
