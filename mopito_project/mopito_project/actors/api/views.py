@@ -43,7 +43,8 @@ from actors.api.serializers import (
     DocumentSerializer,
     StaffPathSerializer,
     PricingSerializer,
-    PaymentMethodSerializer
+    PaymentMethodSerializer,
+    UpdateMedicalFolderSerializer
 )
 
 from mopito_project.utils.functionUtils import get_user_email, remove_special_characters, enc_decrypt_permutation
@@ -82,6 +83,8 @@ class MedicalFolderViewSet(BaseModelViewSet, mixins.ListModelMixin,
     def get_serializer_class(self):
         if self.action == "list" or self.action == "retrieve":
             return MedicalFolderDetailSerializer
+        if self.action == "update" or self.action == "partial_update":
+            return UpdateMedicalFolderSerializer
         return MedicalFolderSerializer
     """
      @action(detail=False, methods=["post"])
@@ -100,6 +103,7 @@ class MedicalFolderViewSet(BaseModelViewSet, mixins.ListModelMixin,
             return Response({"msg": "Ok"}, status=status.HTTP_200_OK)
         else:
             return Response({"error": "Password is not correct"}, status=status.HTTP_400_BAD_REQUEST)
+        
 class StaffPathViewSet(BaseModelViewSet, mixins.ListModelMixin,
                              mixins.RetrieveModelMixin,
                              mixins.UpdateModelMixin,
@@ -225,7 +229,7 @@ class PatientViewSet(BaseModelViewSet, mixins.ListModelMixin,
     def update(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
-            instance = self.get_object()
+            # instance = self.get_object()
             if not instance:
                 return Response(
                     {"detail": "Patient non trouvé"},
@@ -242,10 +246,10 @@ class PatientViewSet(BaseModelViewSet, mixins.ListModelMixin,
                     setattr(instance, field, validated_data.get(field, getattr(instance, field)))
 
                 # Mise à jour du medical folder password
-                medical_folder_password = validated_data.get("medical_folder_password")
-                if medical_folder_password and hasattr(instance, 'medical_folder') and instance.medical_folder:
-                    instance.medical_folder.medical_folder_password = enc_decrypt_permutation(medical_folder_password)
-                    instance.medical_folder.save()
+                # medical_folder_password = validated_data.get("medical_folder_password")
+                # if medical_folder_password and hasattr(instance, 'medical_folder') and instance.medical_folder:
+                #     instance.medical_folder.medical_folder_password = enc_decrypt_permutation(medical_folder_password)
+                #     instance.medical_folder.save()
 
                 # Mise à jour du profil utilisateur
                 if hasattr(instance, 'user') and hasattr(instance.user, 'profile'):

@@ -33,7 +33,7 @@ from mopito_project.users.models import OTP, Profile, User
 from mopito_project.actors.models import Patients, Staffs, Speciality
 from mopito_project.actors.models import Countries
 # from mopito_project.actors.api.serializers import PatientDetailSerializer
-
+from mopito_project.utils.functionUtils import enc_decrypt_permutation
 # from ..models import User, VisibilityGroup
 # from ...h_centers.api.serializers import HUniteSerializers
 # from ...utils.randomize_digit_char import randomize_digit_char
@@ -325,6 +325,7 @@ class PatientPrintSerializer(BaseSerializer):
     #medical_folder = MedicalFolderDetailSerializer()
     # children = UserProfileSerializer(many=True)
     # patient_parent = UserProfileSerializer(source="patient_parent.user", read_only=True)
+    medical_folder_password = serializers.SerializerMethodField()
     class Meta:
         model = Patients
         fields = (
@@ -337,6 +338,7 @@ class PatientPrintSerializer(BaseSerializer):
             "hemoglobin",
             "parent_relation_typ",
             "medical_folder",
+            "medical_folder_password", 
             # "patient_parent",
             # "children",
             # "user",
@@ -344,6 +346,12 @@ class PatientPrintSerializer(BaseSerializer):
             "updated_at",
         )
     read_only_fields = ("id", "created_at", "updated_at",)
+
+    def get_medical_folder_password(self, obj):
+        if obj.medical_folder:
+            # decrypt the password
+            return enc_decrypt_permutation(obj.medical_folder.medical_folder_password)
+        return None
 
 class UserDetailSerializer(BaseSerializer):
     groups = GroupDetailSerializer(many=True)

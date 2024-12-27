@@ -54,6 +54,29 @@ class MedicalFolderSerializer(BaseSerializer):
         )
         read_only_fields = ("id", "created_at", "updated_at",)
 
+class UpdateMedicalFolderSerializer(BaseSerializer):
+    class Meta:
+        model = MedicalFolder
+        fields = (
+            "id",
+            "medical_history", 
+            "ongoing_treatments",
+            "patient",
+            "recent_consultations_summary",
+            "lifestyle_and_habits", 
+            "emergency_contact",
+            "medical_folder_password",
+            "created_at",
+            "updated_at",
+        )
+        read_only_fields = ("id", "created_at", "updated_at",)
+
+    def update(self, instance, validated_data):
+        if "medical_folder_password" in validated_data:
+            # Encrypt password before saving
+            validated_data["medical_folder_password"] = enc_decrypt_permutation(validated_data["medical_folder_password"])
+        return super().update(instance, validated_data)
+
 class DocumentSerializer(BaseSerializer):
     class Meta:
         model = Document
@@ -119,7 +142,7 @@ class UpdatePatientSerializer(BaseSerializer):
     gender = serializers.CharField(required=False)
     first_name = serializers.CharField(required=False)
     last_name = serializers.CharField(required=False)
-    medical_folder_password = serializers.CharField(required=False)
+    # medical_folder_password = serializers.CharField(required=False)
     class Meta:
         model = Patients
         fields = (
@@ -132,7 +155,7 @@ class UpdatePatientSerializer(BaseSerializer):
             "gender",
             "first_name",
             "last_name",
-            "medical_folder_password",
+            # "medical_folder_password",
             # "patient_parent",
             # "parent_relation_typ",
             "created_at",
