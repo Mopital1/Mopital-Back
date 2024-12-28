@@ -78,10 +78,18 @@ class UpdateMedicalFolderSerializer(BaseSerializer):
         return value
     
     def update(self, instance, validated_data):
+        instance.medical_history = validated_data.get("medical_history", instance.medical_history)
+        instance.ongoing_treatments = validated_data.get("ongoing_treatments", instance.ongoing_treatments)
+        instance.patient = validated_data.get("patient", instance.patient)
+        instance.recent_consultations_summary = validated_data.get("recent_consultations_summary", instance.recent_consultations_summary)
+        instance.lifestyle_and_habits = validated_data.get("lifestyle_and_habits", instance.lifestyle_and_habits)
+        instance.emergency_contact = validated_data.get("emergency_contact", instance.emergency_contact)
         if "medical_folder_password" in validated_data:
             # Encrypt password before saving
-            validated_data["medical_folder_password"] = enc_decrypt_permutation(validated_data["medical_folder_password"])
-        return super().update(instance, validated_data)
+            instance.medical_folder_password = enc_decrypt_permutation(validated_data["medical_folder_password"])
+
+        instance.save()
+        return instance
 
 class DocumentSerializer(BaseSerializer):
     class Meta:
