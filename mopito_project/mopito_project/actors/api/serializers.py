@@ -87,9 +87,10 @@ class UpdateMedicalFolderSerializer(BaseSerializer):
         patient = validated_data.get("patient", instance.patient)
         if patient:
             instance.patient = patient
-        if "medical_folder_password" in validated_data:
+        medical_folder_password = validated_data.get("medical_folder_password")
+        if medical_folder_password is not None and medical_folder_password.strip():
             # Encrypt password before saving
-            instance.medical_folder_password = enc_decrypt_permutation(validated_data["medical_folder_password"])
+            instance.medical_folder_password = enc_decrypt_permutation(medical_folder_password)
         instance.save()
         return instance
 
