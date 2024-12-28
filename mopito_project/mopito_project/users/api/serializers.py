@@ -127,7 +127,11 @@ class CreateProfileSerializer(BaseSerializer):
     def validate(self, data):
         if not data.get('phone_number'):
             raise serializers.ValidationError("Phone number is required")
-            
+        if Profile.objects.filter(
+            first_name__iexact=data.get('first_name'),
+            last_name__iexact=data.get('last_name')
+              ).exists():
+            raise serializers.ValidationError("A profile with this first name and last name already exists")
         if data.get("user_typ") == "STAFF":
             # if not data.get("staff_type"):
             #     raise serializers.ValidationError("Staff type is required for staff users")

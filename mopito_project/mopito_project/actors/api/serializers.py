@@ -115,11 +115,14 @@ class DocumentSerializer(BaseSerializer):
                 
             validated_data["document_name"] = document_name
             validated_data["document"] = document
+            # Create the document with the processed filename
+            document = Document.objects.create(**validated_data)
+            return document
             
         except Exception as e:
             raise serializers.ValidationError(f"Error processing document name: {str(e)}")
         
-        return super().create(validated_data)
+        
 
 class MedicalFolderDetailSerializer(BaseSerializer):
     medical_folder_password = serializers.SerializerMethodField()
