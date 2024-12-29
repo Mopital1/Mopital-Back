@@ -340,7 +340,7 @@ class PatientPrintSerializer(BaseSerializer):
     medical_folder = MedicalFolderSerializer()
     # children = UserProfileSerializer(many=True)
     # patient_parent = UserProfileSerializer(source="patient_parent.user", read_only=True)
-    medical_folder_password = serializers.SerializerMethodField()
+    # medical_folder_password = serializers.SerializerMethodField()
     class Meta:
         model = Patients
         fields = (
