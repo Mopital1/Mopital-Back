@@ -30,7 +30,8 @@ from mopito_project.utils.functionUtils import get_user_email
 from mopito_project.utils.sendsms import send_otp
 from mopito_project.utils import randomize_digit_char
 from mopito_project.users.models import OTP, Profile, User
-from mopito_project.actors.models import Patients, Staffs, Speciality
+from mopito_project.actors.models import Patients, Staffs, Speciality, MedicalFolder
+# from mopito_project.actors.api.serializers import MedicalFolderSerializer
 from mopito_project.actors.models import Countries
 # from mopito_project.actors.api.serializers import PatientDetailSerializer
 from mopito_project.utils.functionUtils import enc_decrypt_permutation
@@ -322,11 +323,21 @@ class UpdateUserSerializer(BaseSerializer):
         )
         extra_kwargs = {"password": {"write_only": True}}
 
+class MedicalFolderSerializer(BaseSerializer):
+    class Meta:
+        model = MedicalFolder
+        fields = (
+            "id",
+            "medical_folder_password",
+            "created_at",
+            "updated_at",
+        )
+        read_only_fields = ("id", "created_at", "updated_at",)
 class PatientPrintSerializer(BaseSerializer):
     # profile = ProfileSerializer(source="user.profile")
     # user = UserProfileSerializer()
     # children = serializers.SerializerMethodField(read_only=True)
-    #medical_folder = MedicalFolderDetailSerializer()
+    medical_folder = MedicalFolderSerializer()
     # children = UserProfileSerializer(many=True)
     # patient_parent = UserProfileSerializer(source="patient_parent.user", read_only=True)
     medical_folder_password = serializers.SerializerMethodField()
@@ -342,7 +353,7 @@ class PatientPrintSerializer(BaseSerializer):
             "hemoglobin",
             "parent_relation_typ",
             "medical_folder",
-            "medical_folder_password", 
+            # "medical_folder_password", 
             # "patient_parent",
             # "children",
             # "user",
@@ -351,14 +362,14 @@ class PatientPrintSerializer(BaseSerializer):
         )
     read_only_fields = ("id", "created_at", "updated_at",)
 
-    def get_medical_folder_password(self, obj):
-        if obj.medical_folder and obj.medical_folder_password:
-            try:
-                return enc_decrypt_permutation(obj.medical_folder_password)
-            except Exception as e:
-                logging.error(f"Error decrypting medical folder password: {str(e)}")
-                return None
-        return None
+    # def get_medical_folder_password(self, obj):
+    #     if obj.medical_folder and obj.medical_folder_password:
+    #         try:
+    #             return enc_decrypt_permutation(obj.medical_folder_password)
+    #         except Exception as e:
+    #             logging.error(f"Error decrypting medical folder password: {str(e)}")
+    #             return None
+    #     return None
 
 class UserDetailSerializer(BaseSerializer):
     groups = GroupDetailSerializer(many=True)
