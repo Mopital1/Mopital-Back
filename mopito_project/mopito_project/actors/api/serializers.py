@@ -89,8 +89,8 @@ class UpdateMedicalFolderSerializer(BaseSerializer):
             instance.patient = patient
         medical_folder_password = validated_data.get("medical_folder_password")
         if medical_folder_password is not None and medical_folder_password.strip():
-            # Encrypt password before saving
-            instance.medical_folder_password = enc_decrypt_permutation(medical_folder_password)
+            medical_folder_password = enc_decrypt_permutation(str(medical_folder_password))
+            instance.medical_folder_password = medical_folder_password
         instance.save()
         return instance
 
@@ -232,11 +232,14 @@ class UpdatePatientSerializer(BaseSerializer):
     #         raise serializers.ValidationError(f"Erreur lors de la mise à jour du patient : {e}")
     
 class NearPatientSerializer(BaseSerializer):
-    email = serializers.EmailField()
-    gender = serializers.CharField()
+    email = serializers.EmailField(required=False)
+    gender = serializers.CharField(required=False)
     first_name = serializers.CharField()
     last_name = serializers.CharField()
     dob = serializers.DateField()
+    height = serializers.FloatField(required=False)
+    weight = serializers.FloatField(required=False)
+    parent_relation_typ = serializers.CharField()
     class Meta:
         model = Patients
         fields = (

@@ -352,9 +352,12 @@ class PatientPrintSerializer(BaseSerializer):
     read_only_fields = ("id", "created_at", "updated_at",)
 
     def get_medical_folder_password(self, obj):
-        if obj.medical_folder:
-            # decrypt the password
-            return enc_decrypt_permutation(obj.medical_folder.medical_folder_password)
+        if obj.medical_folder and obj.medical_folder_password:
+            try:
+                return enc_decrypt_permutation(obj.medical_folder_password)
+            except Exception as e:
+                logging.error(f"Error decrypting medical folder password: {str(e)}")
+                return None
         return None
 
 class UserDetailSerializer(BaseSerializer):

@@ -112,7 +112,7 @@ class UpdateAppointmentSerializer(BaseSerializer):
             
             if appointment_date < current_date:
                 raise serializers.ValidationError("La date du rendez-vous doit être dans le futur.")
-            # instance.status = validated_data.get("status", "REPORTED")
+            instance.status = validated_data.get("status", "REPORTED")
             instance.patient_update_count += 1
         try:
             instance.appointment_date = validated_data.get("appointment_date", instance.appointment_date)
