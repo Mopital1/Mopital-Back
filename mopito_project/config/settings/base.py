@@ -339,6 +339,15 @@ REST_FRAMEWORK = {
     "ALLOWED_VERSIONS": ("v1",),
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 10,
+
+    'DEFAULT_THROTTLE_CLASSES': (
+        'rest_framework.throttling.UserRateThrottle',
+
+    ),
+    'DEFAULT_THROTTLE_RATES': {
+        'loginAttempts': '6/hr',
+        'user': '1000/min',
+    }
 }
 
 # django-cors-headers - https://github.com/adamchainz/django-cors-headers#setup
@@ -386,9 +395,9 @@ SIMPLE_JWT = {
 }
 
 # django-cors-headers - https://github.com/adamchainz/django-cors-headers#setup
-CORS_ALLOWED_ORIGINS = ["http://localhost:4200", "http://*", "https://*", "https://api.mopito.com"]
+CORS_ALLOWED_ORIGINS = ["http://localhost:4200", "http://*", "https://*", "https://api.mopital.com"]
 CORS_ORIGIN_ALLOW_ALL = True
-CORS_ORIGIN_WHITELIST = ("http://localhost:3002", "http://*")
+CORS_ORIGIN_WHITELIST = ("http://localhost:3002", "http://*", "https://*", "https://api.mopital.com")
 CORS_ALLOW_HEADERS = [
     "hash",
     "accept",

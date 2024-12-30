@@ -113,9 +113,12 @@ STORAGES = {
         },
     },
 }
-MEDIA_URL = f"https://{aws_s3_domain}/media/"
+server_host = "https://api.mopital.com"
+MEDIA_URL = f"https://{server_host}/media/"
+# MEDIA_URL = f"https://{aws_s3_domain}/media/"
 COLLECTFASTA_STRATEGY = "collectfasta.strategies.boto3.Boto3Strategy"
-STATIC_URL = f"https://{aws_s3_domain}/static/"
+# STATIC_URL = f"https://{aws_s3_domain}/static/"
+STATIC_URL = f"https://{server_host}/static/"
 
 # EMAIL
 # ------------------------------------------------------------------------------
