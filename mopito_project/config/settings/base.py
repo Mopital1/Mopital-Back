@@ -185,12 +185,12 @@ MEDIA_ROOT = str(APPS_DIR / "media")
 # https://docs.djangoproject.com/en/dev/ref/settings/#media-url
 MEDIA_URL = "/media/"
 
-if not DEBUG:
-    MEDIA_URL = 'https://%s/media/' % env('DJANGO_ALLOWED_HOSTS', default='api.mopital.com').split(',')[0]
+# if not DEBUG:
+#     MEDIA_URL = 'https://%s/media/' % env('DJANGO_ALLOWED_HOSTS', default='api.mopital.com').split(',')[0]
 
-print("media url", MEDIA_URL)
+# print("media url", MEDIA_URL)
 
-print("debug", DEBUG)
+# print("debug", DEBUG)
 # TEMPLATES
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#templates
