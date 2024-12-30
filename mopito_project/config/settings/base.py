@@ -23,6 +23,9 @@ if READ_DOT_ENV_FILE:
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#debug
 DEBUG = env.bool("DJANGO_DEBUG", False)
+
+
+
 # Local time zone. Choices are
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
 # though not all of them may be available with every OS.
@@ -182,6 +185,12 @@ MEDIA_ROOT = str(APPS_DIR / "media")
 # https://docs.djangoproject.com/en/dev/ref/settings/#media-url
 MEDIA_URL = "/media/"
 
+if not DEBUG:
+    MEDIA_URL = 'https://%s/media/' % env('DJANGO_ALLOWED_HOSTS', default='api.mopital.com').split(',')[0]
+
+print("media url", MEDIA_URL)
+
+print("debug", DEBUG)
 # TEMPLATES
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#templates
@@ -240,6 +249,8 @@ EMAIL_BACKEND = env(
 )
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-timeout
 EMAIL_TIMEOUT = 5
+
+DEFAULT_HOST = 'https://api.mopital.com'
 
 # Token Times IN Minutes
 VALID_TOKEN_TIME = 30
